@@ -1,11 +1,9 @@
-<<<<<<< HEAD
+
 # =======================================================================
 # IMPORTACIONES LIGERAS GLOBALES (NO USAN NUMPY/MATPLOTLIB)
 # Estas son las únicas que deben estar fuera de las funciones para ahorrar memoria al iniciar.
 # =======================================================================
-=======
 
->>>>>>> 3037b1becb02bb2aee4bfae153a5d9c0504def42
 from django.shortcuts import render, redirect, HttpResponse
 from django.http import JsonResponse, HttpResponseBadRequest
 import random
