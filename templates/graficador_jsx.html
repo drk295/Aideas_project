@@ -37,6 +37,12 @@
         margin: 40px auto;
         position: relative;
         overflow: hidden;
+        transition: box-shadow 0.3s ease; /* Transición para el efecto hover */
+    }
+
+    /* Efecto hover adicional para resaltar el contenedor */
+    .graficador-container:hover {
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3), 0 0 50px rgba(241, 196, 15, 0.2);
     }
 
     .content-wrapper {
@@ -57,6 +63,16 @@
         animation: slideInUp 0.6s ease-out;
         position: relative;
         z-index: 2;
+        transition: color 0.3s ease;
+    }
+    
+    /* Efecto hover de degradado de bandera en el título */
+    h2:hover {
+        background: linear-gradient(90deg, #0067C6, #FFFFFF, #F1C40F, #0067C6);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent; /* Hace que el color del texto sea transparente para ver el degradado */
+        animation: none;
     }
 
     .icon-volcano, .icon-sun, .icon-guardabarranco, .icon-escudo {
@@ -204,7 +220,7 @@
             <span class="icon-escudo">⛰️</span>
         </h2>
         <p class="descripcion">
-            ¡Explora las matemáticas! Escribe expresiones como <code>f(x)=sin(x)</code>, <code>g(x)=x^2</code>, o <code>Circle([0,0],5)</code> y pulsa "Añadir".
+            ¡Explora las matemáticas! Escribe expresiones como <code>y=2x</code>, <code>f(x)=3cos(x)</code>, o <code>Circle([0,0],5)</code> y pulsa "Añadir".
         </p>
         
         <div class="controls-container">
@@ -220,98 +236,145 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.4.3/jsxgraphcore.js"></script>
 <script>
     // Usar 'let' para poder reasignar la variable 'board' al limpiar
-    let board = JXG.JSXGraph.initBoard('jxgbox', {boundingbox:[-10,10,10,-10], axis:true, showCopyright: false});
+    let board = JXG.JSXGraph.initBoard('jxgbox', {
+        boundingbox: [-10, 10, 10, -10],
+        axis: true,
+        showCopyright: false,
+        keepaspectratio: true // Mantiene círculos redondos
+    });
+
+    // Control de colores para las gráficas
+    let graphCount = 0;
+    const colors = ['#1f77b4', '#d62728', '#2ca02c', '#ff7f0e', '#9467bd', '#8c564b'];
 
     /**
-     * Función auxiliar para limpiar la expresión y anteponer 'Math.' a las funciones.
-     * Esto evita los errores de 'with(Math){...}' en el constructor Function.
+     * Función principal para sanitizar y preparar la expresión para JS.
+     * Incluye:
+     * 1. Multiplicación implícita (Ej: 2x -> 2*x, 3sin(x) -> 3*Math.sin(x))
+     * 2. Reemplazo de ^ por **
+     * 3. Anteponer Math. a funciones y constantes.
      */
     function sanitizeExpression(expression) {
         // 1. Reemplaza el operador de potencia '^' por '**'
         let cleanExpr = expression.replace(/\^/g, '**');
 
-        // 2. Lista de funciones matemáticas comunes
-        const mathFunctions = ['sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'sqrt', 'log', 'exp', 'abs', 'round', 'ceil', 'floor'];
+        // 2. Reemplaza pi y e por Math.PI y Math.E primero
+        cleanExpr = cleanExpr.replace(/\b(pi|PI)\b/g, 'Math.PI');
+        cleanExpr = cleanExpr.replace(/\b(e)\b/g, 'Math.E');
 
-        // 3. Reemplaza 'func(' con 'Math.func(' para todas las funciones en la lista
+        // 3. Lista de funciones matemáticas comunes
+        const mathFunctions = ['sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'sqrt', 'log', 'exp', 'abs', 'round', 'ceil', 'floor', 'min', 'max'];
+
+        // 4. Inserción de '*' para multiplicación implícita: constante seguida de variable/función.
+        // Ej: 2x -> 2*x, 3sin(x) -> 3*sin(x), 2pi -> 2*pi
+        cleanExpr = cleanExpr.replace(
+            /([0-9\.]+)(?=([a-zA-Z\(]))/g,
+            (match, p1) => p1 + '*'
+        );
+        
+        // 5. Anteponer 'Math.' a las funciones
         mathFunctions.forEach(func => {
-            // Usa una expresión regular para encontrar 'func(' solo si no está precedida por 'Math.'
+            // Busca 'func(' y lo reemplaza con 'Math.func('
             const regex = new RegExp(`(?<!Math\\.)\\b${func}\\(`, 'g');
             cleanExpr = cleanExpr.replace(regex, `Math.${func}(`);
         });
         
-        // 4. Reemplaza pi y e por Math.PI y Math.E
-        cleanExpr = cleanExpr.replace(/\b(pi|PI)\b/g, 'Math.PI');
-        cleanExpr = cleanExpr.replace(/\b(e)\b/g, 'Math.E');
-
         return cleanExpr;
     }
 
-    function addExpression(text){
+
+    function addExpression(text) {
         text = text.trim();
-        if(!text) return;
-        
+        if (!text) return;
+
+        // Determina el color para esta nueva gráfica y avanza el contador
+        const currentColor = colors[graphCount % colors.length];
+        graphCount++;
+
         try {
             let exprToGraph;
-            
+            // Sanitiza el texto de entrada UNA VEZ al principio
+            let sanitizedText = sanitizeExpression(text);
+
             // 1. Intenta interpretar funciones de la forma f(x)=...
             let fnMatch = text.match(/^([a-zA-Z]\w*)\(x\)\s*=\s*(.+)$/);
-            
-            if(fnMatch){
+
+            if (fnMatch) {
                 exprToGraph = fnMatch[2];
+                // Sanitizamos solo el lado derecho de la ecuación
                 const f = new Function('x', 'return ' + sanitizeExpression(exprToGraph));
-                board.create('functiongraph', [f], {strokeColor:'#1f77b4', strokeWidth:3});
+                board.create('functiongraph', [f], {
+                    strokeColor: currentColor,
+                    strokeWidth: 3
+                });
                 return;
             }
 
             // 2. Intenta interpretar funciones de la forma y=...
             let yMatch = text.match(/^y\s*=\s*(.+)$/i);
-            if(yMatch){
+            if (yMatch) {
                 exprToGraph = yMatch[1];
+                // Sanitizamos solo el lado derecho de la ecuación
                 const f = new Function('x', 'return ' + sanitizeExpression(exprToGraph));
-                board.create('functiongraph', [f], {strokeColor:'#d62728', strokeWidth:3});
+                board.create('functiongraph', [f], {
+                    strokeColor: currentColor,
+                    strokeWidth: 3
+                });
                 return;
             }
-            
-            // 3. Intenta interpretar funciones directas (Ej: sin(x))
-            if (!text.includes('=') && !text.toLowerCase().includes('circle') && !text.toLowerCase().includes('implicitcurve') && (text.includes('x') || text.match(/[0-9]+/))){
+
+            // 3. Intenta interpretar funciones directas (Ej: sin(x) o 3)
+            if (!text.includes('=') && !text.toLowerCase().includes('circle') && (text.includes('x') || text.match(/^[0-9.]+$|^pi$|^e$/i))) {
                 exprToGraph = text;
-                const f = new Function('x', 'return ' + sanitizeExpression(exprToGraph));
-                board.create('functiongraph', [f], {strokeColor:'#ff7f0e', strokeWidth:3});
+                const f = new Function('x', 'return ' + sanitizedText);
+                board.create('functiongraph', [f], {
+                    strokeColor: currentColor,
+                    strokeWidth: 3
+                });
                 return;
             }
 
-            // 4. Intenta interpretar sintaxis Circle([cx,cy], r)
-            let circ = text.match(/^Circle\s*\(\s*\[?\s*([-0-9.]+)\s*,\s*([-0-9.]+)\s*\]?\s*,\s*([-0-9.]+)\s*\)/i);
-            if(circ){
-                const cx = parseFloat(circ[1]), cy = parseFloat(circ[2]), r = parseFloat(circ[3]);
-                board.create('circle', [[cx,cy], r], {strokeColor:'#2ca02c', strokeWidth:3});
+            // 4. Intenta interpretar sintaxis Circle/Círculo ([cx,cy], r)
+            let circ = text.match(/^(?:Circle|Círculo)\s*\(\s*\[?\s*([-0-9.eE]+)\s*,\s*([-0-9.eE]+)\s*\]?\s*,\s*([-0-9.eE]+)\s*\)/i);
+            if (circ) {
+                const cx = parseFloat(circ[1]),
+                    cy = parseFloat(circ[2]),
+                    r = parseFloat(circ[3]);
+                if (r <= 0) throw new Error("El radio debe ser positivo.");
+                board.create('circle', [
+                    [cx, cy], r
+                ], {
+                    strokeColor: currentColor,
+                    strokeWidth: 3
+                });
                 return;
             }
 
-            // 5. Intenta interpretar círculos implícitos (x^2+y^2=25)
-            let implicitCircle = text.match(/^(x\^2|x\*\*2)\s*\+\s*(y\^2|y\*\*2)\s*=\s*([-0-9.]+)$/i);
-            if(implicitCircle){
-                const R = Math.sqrt(Math.abs(parseFloat(implicitCircle[3])));
-                board.create('circle', [[0,0], R], {strokeColor:'#9467bd', strokeWidth:3});
+            // 5. Curvas implícitas genéricas (e.g., x^2+y^2=25, x*y=1, etc.)
+            if (text.includes('x') && text.includes('y') && text.includes('=')) {
+                board.create('implicitcurve', [sanitizedText], {
+                    strokeColor: currentColor,
+                    strokeWidth: 3
+                });
                 return;
             }
-            
-            // 6. Si no coincide con nada, intentar como curva implícita genérica
-            board.create('implicitcurve', [text.replace(/\^/g,'**')], {strokeColor:'#ff7f0e', strokeWidth:3});
+
+            // Fallback: Si no coincide con ninguna forma, lanzar un error
+            throw new Error("Formato de expresión no reconocido.");
 
         } catch (e) {
             console.error("Error al analizar la expresión:", e);
-            alert('Expresión no reconocida o inválida. Por favor, revisa la sintaxis.');
+            // Mostrar una alerta con el mensaje de error para el usuario
+            alert(`¡Error, pinolero! No pude graficar la expresión.\n\nRevisa la sintaxis. Ejemplos válidos:\n- f(x)=2x\n- y=3sin(x)\n- x^2+y^2=25\n- Circle([1, -2], 4)`);
         }
     }
 
-    document.getElementById('addBtn').addEventListener('click', function(){
+    document.getElementById('addBtn').addEventListener('click', function() {
         addExpression(document.getElementById('expr').value);
         document.getElementById('expr').value = ''; // Limpiar el input después de añadir
         document.getElementById('expr').focus(); // Devolver el foco al input
     });
-    
+
     // Permitir añadir con la tecla Enter
     document.getElementById('expr').addEventListener('keyup', function(event) {
         if (event.key === 'Enter') {
@@ -320,13 +383,21 @@
         }
     });
 
-    document.getElementById('clearBtn').addEventListener('click', function(){
+    document.getElementById('clearBtn').addEventListener('click', function() {
         // 1. Destruye el tablero viejo
         JXG.JSXGraph.freeBoard(board);
-        
+
         // 2. Crea un nuevo tablero y ASIGNA LA NUEVA INSTANCIA a la variable 'board'
-        board = JXG.JSXGraph.initBoard('jxgbox', {boundingbox:[-10,10,10,-10], axis:true, showCopyright: false});
-        
+        board = JXG.JSXGraph.initBoard('jxgbox', {
+            boundingbox: [-10, 10, 10, -10],
+            axis: true,
+            showCopyright: false,
+            keepaspectratio: true
+        });
+
+        // 3. Reinicia el contador de colores
+        graphCount = 0;
+
         // Opcional: limpiar la caja de texto y devolver el foco
         document.getElementById('expr').value = '';
         document.getElementById('expr').focus();

@@ -4,172 +4,151 @@
 
 {% block content %}
 <style>
-    /* --- Estilos Inspirados en Nicaragua y las Matemáticas --- */
-
-    body {
-        background: linear-gradient(135deg, #00438b, #ffff, #00438b); /* Azul y blanco de la bandera */
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-
-    h2 {
-        color: #00438b;
-        text-align: center;
-        font-size: 2.5em;
-        margin-bottom: 0.5em;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
-    }
-    
-    /* Ruleta y sus animaciones */
-    .spinner {
-        border: 4px solid rgba(255, 255, 255, 0.4);
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        border-left-color: #f7d201; /* Color del sol */
-        animation: spin 1s ease-in-out infinite;
-        display: none;
-        margin: 0 auto;
-    }
-
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-    
-    .problema-container {
-        padding: 2em;
-        border-radius: 15px;
-        background-color: rgba(255, 255, 255, 0.9);
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        transition: transform 0.5s ease-out, opacity 0.5s ease-out;
-    }
-    
-    .problema-container.animate-in {
-        animation: bounceIn 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards;
-    }
-
-    @keyframes bounceIn {
-        0% { transform: scale(0.3); opacity: 0; }
-        50% { transform: scale(1.1); opacity: 1; }
-        100% { transform: scale(1); }
-    }
-    
-    /* Estilos de botones de acción */
-    .btn-accion {
-        background-color: #00438b;
-        color: white;
-        border: none;
-        padding: 10px 20px;
-        font-size: 1em;
-        font-weight: bold;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: background-color 0.3s, transform 0.2s;
-        margin: 5px;
-    }
-    .btn-accion:hover:not(:disabled) {
-        background-color: #005aae;
-        transform: translateY(-2px);
-    }
-    .btn-accion:disabled {
-        background-color: #ccc;
-        cursor: not-allowed;
-    }
-
-    /* Estilos de opciones y feedback */
-    .opcion-correcta {
-        background-color: #64dd17 !important; /* Verde vibrante */
-        color: #000;
-        border: 2px solid #2e7d32 !important;
-    }
-
-    .opcion-incorrecta {
-        background-color: #d50000 !important; /* Rojo intenso */
-        color: #fff;
-        border: 2px solid #b71c1c !important;
-    }
-    
-    .label-opcion {
-        display: block;
-        padding: 12px;
-        margin-bottom: 8px;
-        border: 1px solid #c0c0c0;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: background-color 0.2s, transform 0.2s;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-
-    .label-opcion:hover {
-        background-color: #e8e8e8;
-        transform: translateY(-2px);
-    }
-
-    /* Ocultar inputs de radio de forma accesible */
-    input[type="radio"] {
-        position: absolute; 
-        opacity: 0; 
-        pointer-events: none;
-    }
-
-    input[type="radio"]:checked + .label-opcion {
-        background-color: #d0d0d0;
-        border-color: #00438b;
-        box-shadow: 0 0 8px rgba(0, 67, 139, 0.5);
-    }
-
-    /* Estilos del formulario principal */
-    #form-ruleta {
-        text-align: center;
-        background-color: rgba(255, 255, 255, 0.8);
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        margin-bottom: 2em;
-    }
-    
-    #btn-girar {
-        background-color: #f7d201; /* Amarillo del sol */
-        color: #00438b;
-        border: none;
-        padding: 12px 25px;
-        font-size: 1.1em;
-        font-weight: bold;
-        border-radius: 25px;
-        cursor: pointer;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-        transition: background-color 0.3s, transform 0.3s;
-    }
-
-    #btn-girar:hover:not(:disabled) {
-        background-color: #ffd900;
-        transform: translateY(-3px);
-    }
-    
-    #puntuacion-container {
-        text-align: center;
-        font-size: 1.5em;
-        font-weight: bold;
-        color: #00438b;
-        margin-bottom: 1em;
-    }
-
-    #feedback strong {
-        font-size: 1.2em;
-    }
-    
-    #detalles-resp summary {
-        cursor: pointer;
-        font-weight: bold;
-        color: #00438b;
-    }
+/* --- Estilos Inspirados en Nicaragua y las Matemáticas --- */
+body {
+    background: linear-gradient(135deg, #00438b, #ffff, #00438b);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+h2 {
+    color: #00438b;
+    text-align: center;
+    font-size: 2.5em;
+    margin-bottom: 0.5em;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+/* Ruleta y sus animaciones */
+.spinner {
+    border: 4px solid rgba(255, 255, 255, 0.4);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border-left-color: #f7d201;
+    animation: spin 1s ease-in-out infinite;
+    display: none;
+    margin: 0 auto;
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+.problema-container {
+    padding: 2em;
+    border-radius: 15px;
+    background-color: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    transition: transform 0.5s ease-out, opacity 0.5s ease-out;
+}
+.problema-container.animate-in {
+    animation: bounceIn 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards;
+}
+@keyframes bounceIn {
+    0% { transform: scale(0.3); opacity: 0; }
+    50% { transform: scale(1.1); opacity: 1; }
+    100% { transform: scale(1); }
+}
+/* Estilos de botones de acción */
+.btn-accion {
+    background-color: #00438b;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1em;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+    margin: 5px;
+}
+.btn-accion:hover:not(:disabled) {
+    background-color: #005aae;
+    transform: translateY(-2px);
+}
+.btn-accion:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+/* Estilos de opciones y feedback */
+.opcion-correcta {
+    background-color: #64dd17 !important;
+    color: #000;
+    border: 2px solid #2e7d32 !important;
+}
+.opcion-incorrecta {
+    background-color: #d50000 !important;
+    color: #fff;
+    border: 2px solid #b71c1c !important;
+}
+.label-opcion {
+    display: block;
+    padding: 12px;
+    margin-bottom: 8px;
+    border: 1px solid #c0c0c0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.label-opcion:hover {
+    background-color: #e8e8e8;
+    transform: translateY(-2px);
+}
+/* Ocultar inputs de radio de forma accesible */
+input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+input[type="radio"]:checked + .label-opcion {
+    background-color: #d0d0d0;
+    border-color: #00438b;
+    box-shadow: 0 0 8px rgba(0, 67, 139, 0.5);
+}
+/* Estilos del formulario principal */
+#form-ruleta {
+    text-align: center;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    margin-bottom: 2em;
+}
+#btn-girar {
+    background-color: #f7d201;
+    color: #00438b;
+    border: none;
+    padding: 12px 25px;
+    font-size: 1.1em;
+    font-weight: bold;
+    border-radius: 25px;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    transition: background-color 0.3s, transform 0.3s;
+}
+#btn-girar:hover:not(:disabled) {
+    background-color: #ffd900;
+    transform: translateY(-3px);
+}
+#puntuacion-container {
+    text-align: center;
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #00438b;
+    margin-bottom: 1em;
+}
+#feedback strong {
+    font-size: 1.2em;
+}
+#detalles-resp summary {
+    cursor: pointer;
+    font-weight: bold;
+    color: #00438b;
+}
 </style>
 
 <h2>⭐ Ruleta Matemática ⭐</h2>
 
 <form id="form-ruleta">
     {% csrf_token %} 
-    
     <label>Unidad:
         <select name="unidad_id" id="unidad_id" style="width: 80%; padding: 10px; border-radius: 5px; border: 1px solid #ccc; font-size: 1em; margin-top: 5px;">
             {% for id, unidad in unidades %}
@@ -191,196 +170,163 @@
 <div id="resultado" style="margin-top:2em;"></div>
 
 <script>
-    let puntuacion = 0;
-    let unidadActual = '';
+MathJax = {
+    tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    }
+};
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
-    // Función auxiliar para obtener la cookie CSRF
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.startsWith(name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
+<script>
+let puntuacion = 0;
+let unidadActual = '';
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i=0; i<cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.startsWith(name+'=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length+1));
+                break;
             }
         }
-        return cookieValue;
     }
+    return cookieValue;
+}
 
-    // Función para realizar la solicitud POST (Girar Ruleta)
-    function postRuleta(unidad_id, participants) {
-        const form = new FormData();
-        form.append('unidad_id', unidad_id);
-        form.append('participants', participants);
-        
-        // Se obtiene el token desde el campo oculto generado por {% csrf_token %} o la cookie
-        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value || getCookie('csrftoken');
-
-        return fetch("{% url 'ruleta_general' %}", {
-            method: 'POST',
-            headers: {
-                // Se envía el token en el header, método estándar para AJAX en Django
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRFToken': csrfToken
-            },
-            body: form
-        }).then(res => {
-            // Manejar 403 Forbidden si el token falla
-            if (res.status === 403) {
-                throw new Error("Error 403: Prohibido. El token CSRF puede ser inválido o falta la cookie.");
-            }
-            return res.json();
-        });
-    }
-
-    // Función para renderizar el problema y las opciones
-    function renderResultado(data) {
-        const resultadoDiv = document.getElementById('resultado');
-        resultadoDiv.innerHTML = '';
-        const puntuacionContainer = document.getElementById('puntuacion-container');
-
-        if (data.error) {
-            resultadoDiv.innerHTML = `<strong style="color:#d50000;">${data.error}</strong>`;
-            return;
-        }
-
-        if (data.participante) {
-            resultadoDiv.innerHTML += `<h3>🎉 ¡Participante elegido: ${data.participante}!</h3>`;
-        }
-        
-        if (data.problema) {
-            // Lógica de reinicio de puntuación si cambia la unidad
-            if (data.unidad_nombre !== unidadActual) {
-                puntuacion = 0;
-                unidadActual = data.unidad_nombre;
-            }
-            document.getElementById('puntuacion').textContent = puntuacion;
-            puntuacionContainer.style.display = 'block';
-
-            const problemaHTML = `
-                <div id="problema-container" class="problema-container">
-                    <h3>${data.problema}</h3>
-                    <div id="opciones-container" style="margin-top: 1em;"></div>
-                    <div id="botones-accion" style="margin-top:1.5em; text-align: center;">
-                        <button type="button" id="btn-comprobar-respuesta" class="btn-accion">Comprobar respuesta</button>
-                        <button type="button" id="btn-mostrar-explicacion" class="btn-accion" disabled>Mostrar explicación</button>
-                    </div>
-                    <div id="feedback" style="margin-top:1em;"></div>
-                    <details id="detalles-resp" style="margin-top:1.5em; display:none;">
-                        <summary>Detalles de la respuesta</summary>
-                        <p><strong>Respuesta correcta:</strong> ${data.respuesta}</p>
-                        <p>${data.explicacion}</p>
-                    </details>
-                </div>
-            `;
-            resultadoDiv.innerHTML += problemaHTML;
-            
-            const opcionesContainer = document.getElementById('opciones-container');
-            data.opciones.forEach((opcion, index) => {
-                const opcionDiv = document.createElement('div');
-                opcionDiv.innerHTML = `
-                    <input type="radio" id="opcion${index}" name="opcion" value="${opcion.texto}" data-correct="${opcion.es_correcta ? '1' : '0'}">
-                    <label class="label-opcion" for="opcion${index}">${opcion.texto}</label>
-                `;
-                opcionesContainer.appendChild(opcionDiv);
-            });
-            
-            // --- Lógica de Eventos del Problema ---
-            const btnComprobar = document.getElementById('btn-comprobar-respuesta');
-            const btnExplicacion = document.getElementById('btn-mostrar-explicacion');
-            const opcionesRadios = document.querySelectorAll('input[name="opcion"]');
-            const feedbackDiv = document.getElementById('feedback');
-            const detallesResp = document.getElementById('detalles-resp');
-
-            btnComprobar.addEventListener('click', () => {
-                const checkedOption = document.querySelector('input[name="opcion"]:checked');
-                if (!checkedOption) {
-                    feedbackDiv.innerHTML = `<strong style="color:#f9a825;">¡Debes seleccionar una respuesta!</strong>`;
-                    return;
-                }
-
-                opcionesRadios.forEach(radio => radio.disabled = true);
-                btnComprobar.disabled = true;
-                btnExplicacion.disabled = false;
-                
-                const esCorrecta = checkedOption.dataset.correct === '1';
-                if (esCorrecta) {
-                    feedbackDiv.innerHTML = `<strong style="color:#64dd17;">¡Correcto! ✅ ¡Felicidades!</strong>`;
-                    puntuacion = Math.min(20, puntuacion + 1);
-                } else {
-                    feedbackDiv.innerHTML = `<strong style="color:#d50000;">Incorrecto. ❌ ¡Sigue intentando!</strong>`;
-                }
-                document.getElementById('puntuacion').textContent = puntuacion;
-                
-                // Mostrar colores de feedback
-                const labels = document.querySelectorAll('.label-opcion');
-                labels.forEach(label => {
-                    const input = document.getElementById(label.getAttribute('for'));
-                    if (input.dataset.correct === '1') {
-                        label.classList.add('opcion-correcta');
-                    }
-                    if (input === checkedOption && !esCorrecta) {
-                        label.classList.add('opcion-incorrecta');
-                    }
-                });
-            });
-
-            btnExplicacion.addEventListener('click', () => {
-                detallesResp.style.display = 'block';
-                detallesResp.open = true;
-                btnExplicacion.disabled = true; // Deshabilitar después de mostrar
-            });
-            
-            // Animación para el contenedor del problema
-            const problemaContainer = document.getElementById('problema-container');
-            problemaContainer.classList.add('animate-in');
-        }
-    }
-
-    // --- Manejo del Evento de 'Girar Ruleta' ---
-    document.getElementById('form-ruleta').addEventListener('submit', function(e){
-        e.preventDefault();
-        const unidad_id = document.getElementById('unidad_id').value;
-        const participants = document.getElementById('participants').value.trim();
-        const resultadoDiv = document.getElementById("resultado");
-        const btnGirar = document.getElementById("btn-girar");
-        const spinner = document.createElement('div');
-        spinner.className = 'spinner';
-        
-        // Mostrar Spinner
-        btnGirar.innerHTML = '';
-        btnGirar.appendChild(spinner);
-        spinner.style.display = 'block';
-        btnGirar.disabled = true;
-
-        if (!unidad_id) {
-            resultadoDiv.innerHTML = `<strong style="color:#d50000;">Error: Debes seleccionar una unidad.</strong>`;
-            
-            // Restaurar botón de giro
-            setTimeout(() => {
-                spinner.style.display = 'none';
-                btnGirar.textContent = 'Girar Ruleta';
-                btnGirar.disabled = false;
-            }, 500);
-            return;
-        }
-
-        postRuleta(unidad_id, participants).then(data => {
-            renderResultado(data);
-        }).catch(err => {
-            resultadoDiv.innerHTML = `<strong>Error en la petición: ${err.message}. Por favor, recarga la página.</strong>`;
-            console.error(err);
-        }).finally(() => {
-            // Ocultar Spinner y habilitar botón
-            setTimeout(() => {
-                spinner.style.display = 'none';
-                btnGirar.textContent = 'Girar Ruleta';
-                btnGirar.disabled = false;
-            }, 1000); 
-        });
+function postRuleta(unidad_id, participants) {
+    const form = new FormData();
+    form.append('unidad_id', unidad_id);
+    form.append('participants', participants);
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value || getCookie('csrftoken');
+    return fetch("{% url 'ruleta_general' %}", {
+        method: 'POST',
+        headers: {'X-Requested-With':'XMLHttpRequest','X-CSRFToken':csrfToken},
+        body: form
+    }).then(res => {
+        if (res.status === 403) throw new Error("Error 403: Prohibido. Token CSRF inválido o falta cookie.");
+        return res.json();
     });
+}
+
+function renderResultado(data) {
+    const resultadoDiv = document.getElementById('resultado');
+    resultadoDiv.innerHTML = '';
+    const puntuacionContainer = document.getElementById('puntuacion-container');
+
+    if (data.error) {
+        resultadoDiv.innerHTML = `<strong style="color:#d50000;">${data.error}</strong>`;
+        return;
+    }
+
+    if (data.participante) resultadoDiv.innerHTML += `<h3>🎉 ¡Participante elegido: ${data.participante}!</h3>`;
+
+    if (data.problema) {
+        if (data.unidad_nombre !== unidadActual) { puntuacion = 0; unidadActual = data.unidad_nombre; }
+        document.getElementById('puntuacion').textContent = puntuacion;
+        puntuacionContainer.style.display = 'block';
+
+        const problemaHTML = `
+            <div id="problema-container" class="problema-container">
+                <h3>${data.problema}</h3>
+                <div id="opciones-container" style="margin-top: 1em;"></div>
+                <div id="botones-accion" style="margin-top:1.5em; text-align: center;">
+                    <button type="button" id="btn-comprobar-respuesta" class="btn-accion">Comprobar respuesta</button>
+                    <button type="button" id="btn-mostrar-explicacion" class="btn-accion" disabled>Mostrar explicación</button>
+                </div>
+                <div id="feedback" style="margin-top:1em;"></div>
+                <details id="detalles-resp" style="margin-top:1.5em; display:none;">
+                    <summary>Detalles de la respuesta</summary>
+                    <p><strong>Respuesta correcta:</strong> ${data.respuesta}</p>
+                    <p>${data.explicacion}</p>
+                </details>
+            </div>
+        `;
+        resultadoDiv.innerHTML += problemaHTML;
+
+        const opcionesContainer = document.getElementById('opciones-container');
+        data.opciones.forEach((opcion,index)=>{
+            const opcionDiv = document.createElement('div');
+            opcionDiv.innerHTML = `<input type="radio" id="opcion${index}" name="opcion" value="${opcion.texto}" data-correct="${opcion.es_correcta?'1':'0'}">
+            <label class="label-opcion" for="opcion${index}">${opcion.texto}</label>`;
+            opcionesContainer.appendChild(opcionDiv);
+        });
+
+        if (window.MathJax) MathJax.typesetPromise();
+
+        const btnComprobar = document.getElementById('btn-comprobar-respuesta');
+        const btnExplicacion = document.getElementById('btn-mostrar-explicacion');
+        const opcionesRadios = document.querySelectorAll('input[name="opcion"]');
+        const feedbackDiv = document.getElementById('feedback');
+        const detallesResp = document.getElementById('detalles-resp');
+
+        btnComprobar.addEventListener('click',()=>{
+            const checkedOption = document.querySelector('input[name="opcion"]:checked');
+            if(!checkedOption){ feedbackDiv.innerHTML = `<strong style="color:#f9a825;">¡Debes seleccionar una respuesta!</strong>`; return; }
+            opcionesRadios.forEach(radio=>radio.disabled=true);
+            btnComprobar.disabled=true;
+            btnExplicacion.disabled=false;
+            const esCorrecta = checkedOption.dataset.correct==='1';
+            if(esCorrecta){ feedbackDiv.innerHTML=`<strong style="color:#64dd17;">¡Correcto! ✅ ¡Felicidades!</strong>`; puntuacion=Math.min(20,puntuacion+1);}
+            else feedbackDiv.innerHTML=`<strong style="color:#d50000;">Incorrecto. ❌ ¡Sigue intentando!</strong>`;
+            document.getElementById('puntuacion').textContent=puntuacion;
+            const labels=document.querySelectorAll('.label-opcion');
+            labels.forEach(label=>{
+                const input=document.getElementById(label.getAttribute('for'));
+                if(input.dataset.correct==='1') label.classList.add('opcion-correcta');
+                if(input===checkedOption && !esCorrecta) label.classList.add('opcion-incorrecta');
+            });
+        });
+
+        btnExplicacion.addEventListener('click',()=>{
+            detallesResp.style.display='block';
+            detallesResp.open=true;
+            btnExplicacion.disabled=true;
+        });
+
+        const problemaContainer = document.getElementById('problema-container');
+        problemaContainer.classList.add('animate-in');
+    }
+}
+
+document.getElementById('form-ruleta').addEventListener('submit',function(e){
+    e.preventDefault();
+    const unidad_id=document.getElementById('unidad_id').value;
+    const participants=document.getElementById('participants').value.trim();
+    const resultadoDiv=document.getElementById("resultado");
+    const btnGirar=document.getElementById("btn-girar");
+    const spinner=document.createElement('div');
+    spinner.className='spinner';
+    btnGirar.innerHTML='';
+    btnGirar.appendChild(spinner);
+    spinner.style.display='block';
+    btnGirar.disabled=true;
+
+    if(!unidad_id){
+        resultadoDiv.innerHTML=`<strong style="color:#d50000;">Error: Debes seleccionar una unidad.</strong>`;
+        setTimeout(()=>{
+            spinner.style.display='none';
+            btnGirar.textContent='Girar Ruleta';
+            btnGirar.disabled=false;
+        },500);
+        return;
+    }
+
+    postRuleta(unidad_id,participants).then(data=>{ renderResultado(data); })
+    .catch(err=>{
+        resultadoDiv.innerHTML=`<strong>Error en la petición: ${err.message}. Por favor, recarga la página.</strong>`;
+        console.error(err);
+    }).finally(()=>{
+        setTimeout(()=>{
+            spinner.style.display='none';
+            btnGirar.textContent='Girar Ruleta';
+            btnGirar.disabled=false;
+        },1000);
+    });
+});
 </script>
 {% endblock %}
