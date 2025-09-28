@@ -1,0 +1,1 @@
+{% extends 'base.html' %}{% block content %}<h2>Archivos</h2>{% for a in archivos %}<div><a href='{{ a.archivo.url }}'>{{ a.nombre }}</a></div>{% empty %}<div>No files</div>{% endfor %}{% endblock %}

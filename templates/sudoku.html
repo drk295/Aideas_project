@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+{% block title %}Sudoku Numérico{% endblock %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Sudoku Numérico</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Roboto Slab', serif;
+            /* Fondo con los colores de la bandera de Nicaragua */
+            background: linear-gradient(to bottom, #0056b9 33.3%, #ffffff 33.3%, #ffffff 66.6%, #0056b9 66.6%);
+            background-size: 100% 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .sudoku-container {
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            border: 3px solid #005a8f;
+            backdrop-filter: blur(5px);
+            animation: fadeIn 1.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            color: #4b0082;
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            font-size: 2.5em;
+        }
+
+        #sudoku-grid {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            grid-template-rows: repeat(9, 1fr);
+            border: 5px solid #4b0082;
+            gap: 0;
+        }
+
+        .cell {
+            width: 45px;
+            height: 45px;
+            text-align: center;
+            font-size: 1.5em;
+            background-color: #f7f0e6;
+            border: 1px solid #c9a785;
+            outline: none;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+            color: #4b0082;
+        }
+
+        .cell:hover {
+            background-color: #e6e0d9;
+            transform: scale(1.05);
+            z-index: 1;
+        }
+
+        .cell:focus {
+            box-shadow: 0 0 0 3px #005a8f;
+            background-color: #e3f2fd;
+        }
+        
+        /* Líneas más gruesas para los bloques 3x3 */
+        .cell:nth-child(3n) { border-right: 3px solid #4b0082; }
+        .cell:nth-child(n) { border-right: 1px solid #c9a785; }
+        .cell:nth-child(3n + 1) { border-left: 1px solid #c9a785; }
+        .cell:nth-child(n):nth-child(-n + 9) { border-top: 1px solid #c9a785; }
+        .cell:nth-child(9n+1) { border-left: 3px solid #4b0082; }
+        .cell:nth-child(9n) { border-right: 3px solid #4b0082; }
+
+        .cell:nth-child(n+19):nth-child(-n+27),
+        .cell:nth-child(n+46):nth-child(-n+54),
+        .cell:nth-child(n+73):nth-child(-n+81) {
+            border-bottom: 3px solid #4b0082;
+        }
+        .cell:nth-child(n+1):nth-child(-n+9),
+        .cell:nth-child(n+28):nth-child(-n+36),
+        .cell:nth-child(n+55):nth-child(-n+63) {
+            border-top: 3px solid #4b0082;
+        }
+
+        .prefilled {
+            font-weight: bold;
+            background-color: #dcd0c0;
+            cursor: not-allowed;
+            color: #2c3e50;
+        }
+
+        .buttons-container {
+            margin-top: 25px;
+            display: flex;
+            gap: 15px;
+        }
+
+        .button {
+            padding: 12px 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            background-color: #005a8f;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .button:hover {
+            background-color: #004773;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        #check-button {
+            background-color: #4CAF50;
+        }
+        #check-button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="sudoku-container">
+        <h1>Sudoku Numérico</h1>
+        <div id="sudoku-grid">
+            {% for fila in tablero %}
+                {% for celda in fila %}
+                    <input type="text" 
+                           class="cell {% if celda %}prefilled{% endif %}" 
+                           value="{% if celda %}{{ celda }}{% endif %}" 
+                           maxlength="1" 
+                           {% if celda %}disabled{% endif %}
+                           data-fila="{{ forloop.parentloop.counter0 }}"
+                           data-columna="{{ forloop.counter0 }}">
+                {% endfor %}
+            {% endfor %}
+        </div>
+        <div class="buttons-container">
+            <button id="check-button" class="button">Verificar</button>
+            <button id="reset-button" class="button">Reiniciar</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const grid = document.getElementById('sudoku-grid');
+            const cells = document.querySelectorAll('.cell');
+            const checkButton = document.getElementById('check-button');
+            const resetButton = document.getElementById('reset-button');
+
+            cells.forEach(cell => {
+                cell.addEventListener('input', (e) => {
+                    const value = e.target.value;
+                    if (value && !/^[1-9]$/.test(value)) {
+                        e.target.value = '';
+                    }
+                });
+            });
+
+            checkButton.addEventListener('click', () => {
+                const tableroUsuario = Array.from({length: 9}, () => Array(9).fill(0));
+                let completo = true;
+
+                cells.forEach(cell => {
+                    const row = parseInt(cell.dataset.fila);
+                    const col = parseInt(cell.dataset.columna);
+                    const value = parseInt(cell.value) || 0;
+                    tableroUsuario[row][col] = value;
+                    if (value === 0) completo = false;
+                });
+
+                if (completo) {
+                    alert('¡Tablero completo! ¡Felicidades, has resuelto el rompecabezas!');
+                } else {
+                    alert('El tablero aún no está completo. ¡Sigue intentándolo!');
+                }
+            });
+
+            resetButton.addEventListener('click', () => {
+                window.location.reload();
+            });
+        });
+    </script>
+</body>
+</html>
+{% endblock %}

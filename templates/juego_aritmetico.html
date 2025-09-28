@@ -1,0 +1,222 @@
+{% extends 'base.html' %}
+{% block title %}Graficador interactivo{% endblock %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Juego de Operaciones</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+        /* Paleta de colores de Nicaragua */
+        :root {
+            --color-azul-nicaragua: #0067c6;
+            --color-azul-oscuro: #004b8d;
+            --color-blanco: #FFFFFF;
+            --color-volcanes: #97c924; /* Verde amarillento */
+            --color-sol: #FFCD00;
+            --color-incorrecto: #e2001a; /* Rojo del arcoíris */
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 50px 20px;
+            background: linear-gradient(to bottom, var(--color-azul-nicaragua), var(--color-blanco), var(--color-azul-nicaragua));
+            background-size: 100% 300%;
+            animation: gradient-animacion 15s ease infinite;
+        }
+
+        /* Animación para el fondo que simula las franjas de la bandera */
+        @keyframes gradient-animacion {
+            0% { background-position: 0% 0%; }
+            50% { background-position: 0% 100%; }
+            100% { background-position: 0% 0%; }
+        }
+
+        .container {
+            max-width: 600px;
+            margin: auto;
+            padding: 40px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 2px solid var(--color-azul-nicaragua);
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(5px);
+            animation: fadeIn 1s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1, h2, h3 {
+            color: var(--color-azul-oscuro);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+            font-weight: 700;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .icon {
+            display: inline-block;
+            margin: 0 10px;
+            font-size: 1.2em;
+        }
+
+        .icon::before {
+            font-family: 'Font Awesome 5 Free'; /* Asume que tienes Font Awesome, si no, puedes usar emojis */
+            font-weight: 900;
+            color: var(--color-sol);
+            /* Opcional: Si usas emojis, no necesitas Font Awesome */
+        }
+        
+        .icon-escudo::before {
+             content: "🇳🇮"; /* Emoji de la bandera de Nicaragua */
+        }
+
+        .icon-sacuanjoche::before {
+            content: "🌸"; /* Emoji de una flor */
+        }
+
+        p {
+            font-size: 1.2em;
+            color: #333;
+        }
+
+        #timer {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: var(--color-incorrecto);
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .message-correcto {
+            color: var(--color-volcanes);
+            font-weight: bold;
+            font-size: 1.3em;
+        }
+
+        .message-incorrecto {
+            color: var(--color-incorrecto);
+            font-weight: bold;
+            font-size: 1.3em;
+        }
+
+        input[type="number"] {
+            padding: 12px;
+            border: 2px solid var(--color-azul-nicaragua);
+            border-radius: 8px;
+            font-size: 1.2em;
+            width: 150px;
+            transition: all 0.3s ease;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: var(--color-sol);
+            box-shadow: 0 0 8px rgba(255, 205, 0, 0.5);
+        }
+
+        button {
+            padding: 12px 25px;
+            background-color: var(--color-azul-nicaragua);
+            color: var(--color-blanco);
+            border: none;
+            border-radius: 8px;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        button:hover {
+            background-color: var(--color-azul-oscuro);
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        a {
+            color: var(--color-azul-nicaragua);
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.3s ease;
+        }
+
+        a:hover {
+            color: var(--color-azul-oscuro);
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        {% if time_remaining <= 0 %}
+            <h1>
+                <span class="icon icon-sacuanjoche"></span>
+                ¡Fin del Juego!
+                <span class="icon icon-sacuanjoche"></span>
+            </h1>
+            <p>Tu puntuación final es: <span style="font-weight: bold; color: var(--color-azul-nicaragua);">{{ score }}</span></p>
+            <a href="{% url 'select_difficulty' %}">Jugar de nuevo</a>
+        {% else %}
+            <h1>Juego de Operaciones Rápidas</h1>
+            
+            <p>Puntuación: <span style="font-weight: bold;">{{ score }}</span></p>
+            <p>Tiempo restante: <span id="timer">{{ time_remaining }}</span> segundos</p>
+            
+            {% if last_correct == True %}
+                <p class="message-correcto">¡Correcto!</p>
+            {% elif last_correct == False %}
+                <p class="message-incorrecto">¡Incorrecto! La respuesta era: <span style="font-weight: bold;">{{ request.session.correct_answer }}</span></p>
+            {% endif %}
+
+            <h2>
+                <span class="icon icon-escudo"></span>
+                Resuelve:
+                <span class="icon icon-escudo"></span>
+            </h2>
+            <h3><span style="color: var(--color-sol); font-weight: bold;">{{ question }}</span> = ?</h3>
+
+            <form method="post" action="">
+                {% csrf_token %}
+                <input type="number" name="answer" autofocus required>
+                <button type="submit">Enviar</button>
+            </form>
+            
+            <script>
+                // Actualizar el temporizador cada segundo
+                var timerSpan = document.getElementById('timer');
+                var timeRemaining = parseInt(timerSpan.innerText);
+                
+                var timerInterval = setInterval(function() {
+                    timeRemaining--;
+                    timerSpan.innerText = timeRemaining;
+                    
+                    if (timeRemaining <= 0) {
+                        clearInterval(timerInterval);
+                        // Cuando el tiempo se agota, el formulario se envía
+                        document.querySelector('form').submit();
+                    }
+                }, 1000);
+            </script>
+        {% endif %}
+    </div>
+</body>
+</html>
+{% endblock %}

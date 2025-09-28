@@ -1,0 +1,216 @@
+{% extends 'base.html' %}
+{% block title %}Compendio de Fórmulas{% endblock %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Compendio de Fórmulas</title>
+    <style>
+        /* Paleta de Colores inspirada en la bandera de Nicaragua:
+           Azul Cobalto (#005BA4), Blanco (#FFFFFF), Dorado/Amarillo (#FFD700) para acentos.
+           Verde (#008000) o un tono tierra para la naturaleza.
+        */
+        :root {
+            --color-azul: #005BA4;
+            --color-blanco: #FFFFFF;
+            --color-dorado: #FFD700;
+            --color-texto: #333;
+            --color-fondo-claro: #F0F8FF; /* Azul muy claro, casi blanco */
+            --color-borde: #A9D1EF;
+            --color-fondo-detalle: #E6F3FF; /* Un azul claro suave para las cajas de detalles */
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--color-fondo-claro);
+            color: var(--color-texto);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            background-color: var(--color-blanco);
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            border: 2px solid var(--color-azul);
+        }
+
+        h1 {
+            color: var(--color-azul);
+            text-align: center;
+            border-bottom: 3px solid var(--color-dorado);
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+            font-size: 2.2em;
+            letter-spacing: 1px;
+        }
+
+        h2 {
+            color: var(--color-azul);
+            margin-top: 25px;
+            font-size: 1.8em;
+        }
+        
+        h3 {
+            color: var(--color-texto);
+            border-left: 5px solid var(--color-dorado);
+            padding-left: 10px;
+            margin-top: 20px;
+        }
+
+        /* --- Estilo de Navegación y Botones/Enlaces --- */
+
+        a {
+            text-decoration: none;
+            color: var(--color-azul);
+            font-weight: bold;
+            transition: color 0.3s ease, transform 0.2s ease;
+            display: inline-block;
+            padding: 5px 0;
+        }
+
+        a:hover {
+            color: var(--color-dorado);
+            text-decoration: underline;
+            transform: scale(1.02);
+        }
+
+        .nav-link {
+            /* Estilo específico para los enlaces de navegación "Volver" */
+            font-size: 0.95em;
+            margin-right: 15px;
+            padding: 5px 10px;
+            border: 1px solid var(--color-azul);
+            border-radius: 5px;
+            background-color: var(--color-fondo-claro);
+        }
+
+        .nav-link:hover {
+            background-color: var(--color-azul);
+            color: var(--color-blanco);
+            text-decoration: none;
+            box-shadow: 0 4px 8px rgba(0, 91, 164, 0.3);
+        }
+
+        /* --- Listas de Unidades y Fórmulas --- */
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            margin: 10px 0;
+        }
+
+        ul a {
+            display: block;
+            background-color: var(--color-blanco);
+            padding: 12px 20px;
+            border-radius: 8px;
+            border: 2px solid var(--color-borde);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            color: var(--color-azul);
+            font-size: 1.1em;
+        }
+
+        ul a:hover {
+            background-color: var(--color-azul);
+            color: var(--color-blanco);
+            border-color: var(--color-azul);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            transform: translateY(-3px);
+            text-decoration: none;
+        }
+
+        /* --- Detalles de Fórmula --- */
+        .details {
+            border: 2px solid var(--color-azul);
+            padding: 25px;
+            margin-top: 25px;
+            background-color: var(--color-fondo-detalle);
+            border-radius: 10px;
+            box-shadow: inset 0 0 10px rgba(0, 91, 164, 0.1);
+        }
+
+        .details p {
+            margin-bottom: 15px;
+            font-size: 1em;
+            color: #444;
+        }
+
+        /* Estilo para el código de la fórmula (matemáticas) */
+        code {
+            display: block;
+            background-color: var(--color-blanco);
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px dashed var(--color-azul);
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 1.15em;
+            color: var(--color-texto);
+            overflow-x: auto; /* Para fórmulas largas */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Compendio de Fórmulas <br>(Undécimo Grado)</h1>
+
+        {% if selected_unidad %}
+            <p>
+                <a href="?" class="nav-link">← Volver a Unidades</a>
+                {% if selected_formula_details %}
+                    | <a href="?unidad={{ selected_unidad }}" class="nav-link">← Volver a Fórmulas de Unidad</a>
+                {% endif %}
+            </p>
+        {% endif %}
+
+        {% if selected_formula_details %}
+            <h2>Fórmula Seleccionada: {{ selected_formula_details.nombre }}</h2>
+            <div class="details">
+                <h3>Fórmula</h3>
+                <p><code>{{ selected_formula_details.formula }}</code></p>
+                
+                <h3>Descripción</h3>
+                <p>{{ selected_formula_details.descripcion }}</p>
+                
+                <h3>Ejemplo de Uso</h3>
+                <p>{{ selected_formula_details.ejemplo }}</p>
+            </div>
+
+        {% elif selected_unidad %}
+            <h2>Unidad Seleccionada: {{ selected_unidad }}</h2>
+            <p>Selecciona una fórmula para ver los detalles:</p>
+            <ul>
+                {% for formula in formulas %}
+                    <li>
+                        <a href="?unidad={{ selected_unidad }}&formula_id={{ formula.id }}">
+                            {{ formula.nombre }}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+
+        {% else %}
+            <h2>Selecciona una Unidad:</h2>
+            <ul>
+                {% for unidad in unidades %}
+                    <li>
+                        <a href="?unidad={{ unidad }}">
+                            {{ unidad }}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+    </div>
+</body>
+</html>
+{% endblock %}

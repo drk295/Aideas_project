@@ -1,0 +1,14 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}AÍDEAS{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <style>.jxgbox{border:1px solid #ccc}</style>
+</head>
+<body>
+  <header><h1>📘 AÍDEAS </h1></header>
+  <main>{% block content %}{% endblock %}</main>
+</body>
+</html>

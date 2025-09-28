@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Juego del Número Objetivo (Objetivo: {{ objetivo }})</title>
+    <style>
+        /* Fuentes inspiradas en escritura a mano/pizarra */
+        @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Roboto+Mono:wght@400;700&display=swap');
+
+        /* Colores base: Inspiración en la bandera y naturaleza nicaragüense (Azul, Blanco, Verde/Tierra) */
+        :root {
+            --color-cielo: #87CEEB; /* Azul cielo de la bandera */
+            --color-tierra: #A0522D; /* Tono terroso/café */
+            --color-fuego: #FF4500; /* Tono vibrante de animación */
+            --color-pizarra: #3C4B64; /* Gris azulado oscuro para fondo de números */
+            --color-base: #f7f7f7; /* Blanco roto */
+        }
+
+        body { 
+            font-family: 'Caveat', cursive, Arial, sans-serif; 
+            text-align: center; 
+            background: linear-gradient(135deg, var(--color-cielo) 0%, var(--color-base) 100%); /* Degradado suave */
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container { 
+            max-width: 650px; 
+            width: 90%;
+            margin: 30px auto; 
+            padding: 40px 30px; 
+            border: 5px solid var(--color-tierra); /* Marco de borde */
+            border-radius: 15px; 
+            background-color: var(--color-base);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            position: relative;
+            /* Animación inicial sutil */
+            animation: fadeIn 1s ease-out;
+        }
+
+        /* Títulos como si estuvieran escritos a mano */
+        h1, h2 { 
+            font-family: 'Caveat', cursive; 
+            color: var(--color-tierra); 
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
+            margin-bottom: 5px;
+        }
+        h1 { font-size: 3.5em; margin-bottom: 15px; }
+        h2 { font-size: 2.2em; }
+
+        p {
+            font-family: 'Roboto Mono', monospace; /* Texto de instrucción más técnico */
+            font-size: 1.1em;
+            color: #555;
+        }
+
+        /* Estilo de pizarra para los números disponibles */
+        .numeros-disponibles { 
+            font-family: 'Roboto Mono', monospace;
+            font-size: 2em; 
+            margin: 30px 0; 
+            font-weight: bold; 
+            padding: 15px; 
+            background-color: var(--color-pizarra); /* Fondo oscuro de pizarra */
+            border-radius: 8px;
+            display: inline-block;
+            color: var(--color-base); /* Color de tiza */
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+        .numeros-disponibles span {
+            color: #90EE90; /* Verde neón/lima para la 'tiza' */
+            margin: 0 8px;
+            transition: transform 0.2s;
+        }
+        .numeros-disponibles span:hover {
+            transform: scale(1.1); /* Efecto al pasar el mouse */
+        }
+        
+        /* Número objetivo destacado */
+        .objetivo-span { 
+            color: var(--color-fuego); 
+            font-size: 1.2em;
+            font-weight: 700;
+            /* Animación de pulso para el objetivo */
+            animation: pulse 2s infinite; 
+        }
+
+        #resultado { 
+            margin-top: 25px; 
+            padding: 15px;
+            font-size: 1.3em; 
+            border-radius: 8px;
+            min-height: 20px;
+            font-family: 'Roboto Mono', monospace;
+            font-weight: bold;
+            border: 2px dashed transparent;
+            transition: all 0.5s ease;
+        }
+        
+        /* Estilos de input y botón */
+        input[type="text"] { 
+            padding: 12px; 
+            width: 65%; 
+            font-size: 1.1em; 
+            border: 2px solid #ccc; 
+            border-radius: 5px;
+            font-family: 'Roboto Mono', monospace;
+        }
+
+        button { 
+            padding: 10px 20px; 
+            font-size: 1em; 
+            cursor: pointer; 
+            margin-top: 15px; 
+            margin-left: 10px;
+            border: none;
+            border-radius: 20px; /* Bordes más suaves */
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        /* Botón Comprobar (Verde-Esperanza) */
+        button:first-of-type {
+            background-color: #28a745; 
+            color: white;
+        }
+        button:first-of-type:hover {
+            background-color: #218838;
+            transform: translateY(-2px); /* Efecto 3D sutil */
+            box-shadow: 0 6px 8px rgba(0,0,0,0.2);
+        }
+        
+        /* Botón Nuevo Juego (Azul-Bandera) */
+        button:last-of-type {
+            background-color: #007bff;
+            color: white;
+        }
+        button:last-of-type:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0,0,0,0.2);
+        }
+
+        /* Estilos para los mensajes de resultado */
+        #resultado[style*="color: green"] {
+            border-color: green;
+            background-color: #e6ffe6; /* Fondo suave para éxito */
+            animation: tada 1s; /* Animación de éxito */
+        }
+
+        #resultado[style*="color: red"] {
+            border-color: red;
+            background-color: #ffe6e6; /* Fondo suave para error */
+            animation: shake 0.8s; /* Animación de error */
+        }
+
+        #resultado[style*="color: orange"] {
+            border-color: orange;
+            background-color: #fff8e6;
+        }
+
+        /* --- Animaciones (Keyframes) --- */
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translateX(-3px); }
+            20%, 80% { transform: translateX(3px); }
+            30%, 50%, 70% { transform: translateX(-3px); }
+            40%, 60% { transform: translateX(3px); }
+        }
+
+        @keyframes tada {
+            from { transform: scale3d(1, 1, 1); }
+            10%, 20% { transform: scale3d(.9, .9, .9) rotate3d(0, 0, 1, -3deg); }
+            30%, 50%, 70%, 90% { transform: scale3d(1.1, 1.1, 1.1) rotate3d(0, 0, 1, 3deg); }
+            40%, 60%, 80% { transform: scale3d(1.1, 1.1, 1.1) rotate3d(0, 0, 1, -3deg); }
+            to { transform: scale3d(1, 1, 1); }
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>El Juego del Número Objetivo</h1>
+    
+    <p>Utiliza **todos** los números disponibles (una sola vez) y las operaciones básicas (+, -, *, /) para alcanzar el número objetivo.</p>
+
+    <h2>Número Objetivo: <span class="objetivo-span">{{ objetivo }}</span></h2>
+    
+    <div class="numeros-disponibles">
+        Números Disponibles:
+        {% for num in numeros %}
+            <span>{{ num }}</span>
+        {% endfor %}
+    </div>
+
+    <input type="text" id="formula-input" placeholder="Ej: ({{ numeros.0 }} + {{ numeros.1 }}) * ({{ numeros.2 }} - {{ numeros.3 }})">
+    <button onclick="validarFormula()">Comprobar</button>
+    <button onclick="window.location.reload()">Nuevo Juego</button>
+    
+    <p id="resultado"></p>
+</div>
+
+<script>
+    // NO MODIFICADO: Se mantiene la lógica de la función validarFormula()
+    const OBJETIVO = parseInt('{{ objetivo }}'); 
+    const NUMEROS_DISPONIBLES = '{{ numeros_js }}'.split(',').map(Number);
+    
+    // Función para comparar dos listas de números (ignorando el orden)
+    function compararListasDeNumeros(lista1, lista2) {
+        if (lista1.length !== lista2.length) {
+            return false;
+        }
+        // Clona y ordena las listas para hacer una comparación de contenido (maneja números repetidos).
+        const sorted1 = [...lista1].sort((a, b) => a - b);
+        const sorted2 = [...lista2].sort((a, b) => a - b);
+        
+        for (let i = 0; i < sorted1.length; i++) {
+            if (sorted1[i] !== sorted2[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    function validarFormula() {
+        const formulaInput = document.getElementById('formula-input');
+        const resultadoDiv = document.getElementById('resultado');
+        let formula = formulaInput.value.trim();
+
+        if (!formula) {
+            resultadoDiv.style.color = 'orange';
+            resultadoDiv.textContent = 'Por favor, ingresa una fórmula.';
+            return;
+        }
+
+        // 1. Extracción de los números de la fórmula
+        const numerosUsadosStr = formula.match(/\d+/g) || [];
+        const numerosUsados = numerosUsadosStr.map(Number);
+
+        // 2. Validar que se usan TODOS los números disponibles (y solo esos)
+        if (!compararListasDeNumeros(NUMEROS_DISPONIBLES, numerosUsados)) {
+            resultadoDiv.style.color = 'red';
+            const disponiblesTexto = NUMEROS_DISPONIBLES.join(', ');
+            resultadoDiv.textContent = `ERROR: Debes usar exactamente los números disponibles: (${disponiblesTexto}) y usar cada uno una sola vez.`;
+            return;
+        }
+        
+        // 3. Evaluar la fórmula
+        try {
+            // ADVERTENCIA: `eval()` es un riesgo de seguridad. En producción, usa un analizador matemático seguro.
+            // Para este entorno de juego, se mantiene.
+            const resultado = eval(formula); 
+
+            if (resultado === OBJETIVO) {
+                resultadoDiv.style.color = 'green';
+                resultadoDiv.textContent = `¡CORRECTO! ${formula} = ${resultado}. ¡Has alcanzado el número objetivo ${OBJETIVO}!`;
+            } else {
+                resultadoDiv.style.color = 'red';
+                resultadoDiv.textContent = `INCORRECTO. ${formula} = ${resultado}. El objetivo era ${OBJETIVO}.`;
+            }
+
+        } catch (error) {
+            resultadoDiv.style.color = 'red';
+            resultadoDiv.textContent = 'ERROR de sintaxis en la fórmula. Revisa paréntesis y operaciones.';
+            console.error("Error de evaluación:", error);
+        }
+    }
+</script>
+
+</body>
+</html>

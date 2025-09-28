@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% block title %}Graficador interactivo{% endblock %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Selecciona el Juego</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+        
+        /* Paleta de colores inspirada en la bandera y el escudo de Nicaragua */
+        :root {
+            --color-azul-nicaragua: #0067c6;
+            --color-blanco: #FFFFFF;
+            --color-sol: #FFCD00;
+            --color-secundario: #005aab;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            text-align: center;
+            margin: 0;
+            padding-top: 50px;
+            background: linear-gradient(to bottom, var(--color-azul-nicaragua), var(--color-blanco), var(--color-azul-nicaragua));
+            background-size: 100% 300%;
+            animation: gradient-animacion 15s ease infinite;
+        }
+
+        /* Animación para el fondo que simula las franjas de la bandera */
+        @keyframes gradient-animacion {
+            0% { background-position: 0% 0%; }
+            50% { background-position: 0% 100%; }
+            100% { background-position: 0% 0%; }
+        }
+
+        .container {
+            max-width: 400px;
+            margin: auto;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(5px);
+            border: 2px solid var(--color-sol);
+            animation: fadeIn 1s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            color: var(--color-azul-nicaragua);
+            font-size: 2em;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .difficulty-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .difficulty-form button {
+            padding: 15px 25px;
+            font-size: 1.1em;
+            color: var(--color-blanco);
+            background-color: var(--color-azul-nicaragua);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Animación de "rayo de sol" al pasar el mouse */
+        .difficulty-form button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 300%;
+            height: 300%;
+            background: radial-gradient(circle, var(--color-sol) 0%, rgba(255, 205, 0, 0) 70%);
+            transform: translate(-50%, -50%) scale(0);
+            transition: transform 0.5s ease;
+        }
+        
+        .difficulty-form button:hover::before {
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .difficulty-form button:hover {
+            background-color: var(--color-secundario);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 10px rgba(0,0,0,0.2);
+        }
+        
+        .difficulty-form button:active {
+            transform: translateY(0);
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Selecciona el Tipo de Operación</h1>
+        <form class="difficulty-form" method="post" action="{% url 'juego_aritmetico' %}">
+            {% csrf_token %}
+            <button type="submit" name="operation" value="addition">Sumas</button>
+            <button type="submit" name="operation" value="subtraction">Restas</button>
+            <button type="submit" name="operation" value="multiplication">Multiplicaciones</button>
+            <button type="submit" name="operation" value="division">Divisiones</button>
+            <button type="submit" name="operation" value="mixed">Operaciones Mixtas (+, -, *, /)</button>
+            <button type="submit" name="operation" value="advanced">Potencias, Logaritmos y Raíces</button>
+        </form>
+    </div>
+</body>
+</html>
+{% endblock %}

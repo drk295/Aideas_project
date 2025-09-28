@@ -1,0 +1,97 @@
+<style>
+    /* Estilos para el contenedor principal para centrar el contenido */
+    .container {
+        text-align: center;
+        padding: 50px;
+        font-family: 'Times New Roman', serif; /* Tipo de letra más formal para matemáticas */
+        position: relative; /* Necesario para los elementos superpuestos */
+        z-index: 1; /* Asegura que el contenido esté sobre el fondo */
+    }
+
+    /* Fondo animado inspirado en Nicaragua y las matemáticas */
+    body {
+        /* Degradado animado con los colores de la bandera de Nicaragua */
+        background: linear-gradient(-45deg, #004587, #0199d9, #9de4f8, #0199d9, #004587);
+        background-size: 400% 400%;
+        animation: gradient-animation 15s ease infinite;
+    }
+
+    /* Animación del degradado */
+    @keyframes gradient-animation {
+        0% {
+            background-position: 0% 50%;
+        }
+        50% {
+            background-position: 100% 50%;
+        }
+        100% {
+            background-position: 0% 50%;
+        }
+    }
+
+    /* Capa de símbolos matemáticos animados */
+    .math-symbols {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none; /* Permite hacer clic a través de los símbolos */
+        overflow: hidden;
+        z-index: 0; /* Asegura que esté detrás del contenido */
+    }
+
+    .math-symbols::before {
+        content: "∫ ∑ √ π ∞ Δ Ω θ α β γ + - ="; /* Símbolos matemáticos */
+        font-size: 5em;
+        color: rgba(255, 255, 255, 0.1); /* Color blanco semi-transparente */
+        position: absolute;
+        white-space: nowrap;
+        animation: move-symbols 30s linear infinite;
+        font-family: 'Times New Roman', serif;
+    }
+
+    /* Animación de los símbolos */
+    @keyframes move-symbols {
+        0% {
+            transform: translateY(0);
+        }
+        100% {
+            transform: translateY(-100%);
+        }
+    }
+
+    /* Estilo para el botón de llamada a la acción (Call to Action) */
+    .cta-button {
+        display: inline-block;
+        padding: 15px 30px;
+        margin-top: 20px;
+        font-size: 1.1em;
+        color: #fff;
+        background-color: #0028b8; /* Rojo de la bandera de Nicaragua, con un toque de azul */
+        text-decoration: none;
+        border-radius: 8px;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+        box-shadow: 0 4px 10px rgba(0, 10, 101, 0.4);
+        border: none;
+        position: relative;
+        z-index: 2; /* Para que el botón esté sobre el resto */
+    }
+
+    /* Animación del botón al pasar el mouse */
+    .cta-button:hover {
+        background-color: #b01804;
+        transform: scale(1.05) rotate(3deg); /* Una pequeña rotación para más dinamismo */
+        cursor: pointer;
+    }
+</style>
+
+<div class="math-symbols"></div>
+
+<div class="container">
+    <h1>¡Hola! Haz clic en el botón para acceder al libro.</h1>
+    <p>Serás redirigido al archivo en Google Drive.</p>
+    <a href="https://drive.google.com/file/d/1GA3Nk8ewGUXOcOi3bldq7RV8RBSfNv0Y/view?usp=sharing" class="cta-button" target="_blank">
+        Ir al Documento
+    </a>
+</div>
