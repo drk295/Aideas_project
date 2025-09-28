@@ -1,35 +1,71 @@
-from tkinter.messagebox import QUESTION
+# =======================================================================
+# IMPORTACIONES LIGERAS GLOBALES (NO USAN NUMPY/MATPLOTLIB)
+# Estas son las únicas que deben estar fuera de las funciones para ahorrar memoria al iniciar.
+# =======================================================================
 from django.shortcuts import render, redirect, HttpResponse
-import random, numpy as np, matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
-from io import BytesIO
-from .data import RULETAS, FORMULAS
-from .models import  Archivo
-from django.http import JsonResponse
-from django.shortcuts import render
-from django.http import Http404
-from .data import RULETAS
-from django.shortcuts import render
 from django.http import JsonResponse, HttpResponseBadRequest
 import random
 import time
-from django.shortcuts import render, redirect
+import math
+from .data import RULETAS, FORMULAS, UNIDADES, get_formula_by_id
+from .models import Archivo
 
+
+# ===============================================
+# Vistas Generales
+# ===============================================
 
 def index(request):
     return render(request, "index.html")
 
-def grafico_png(request):
-    f = request.GET.get("f", "sin")
-    x = np.linspace(-10,10,400)
-    if f=="sin": y=np.sin(x)
-    else: y=np.zeros_like(x)
-    fig, ax = plt.subplots(); ax.plot(x,y); buf=BytesIO(); fig.savefig(buf, format='png'); plt.close(fig); buf.seek(0)
-    return HttpResponse(buf.getvalue(), content_type='image/png')
-
 def graficador(request):
     return render(request, "graficador_jsx.html")
+
+# ===============================================
+# Vista Optimizada de Graficador
+# ===============================================
+
+def grafico_png(request):
+    """
+    Genera un gráfico PNG.
+    Todas las importaciones pesadas (numpy, matplotlib) están DENTRO de esta función 
+    para ahorrar memoria al iniciar el servidor (evitar SIGKILL).
+    """
+    try:
+        # Importaciones pesadas MOVILIZADAS DENTRO DE LA FUNCIÓN
+        import numpy as np
+        import matplotlib
+        matplotlib.use('Agg')
+        import matplotlib.pyplot as plt
+        from io import BytesIO
+    except ImportError as e:
+        # Esto te alertará si te faltan numpy o matplotlib en requirements.txt
+        return HttpResponseBadRequest(f"Error: Librería de gráficos faltante. Verifica requirements.txt: {e}")
+
+    f = request.GET.get("f", "sin")
+    x = np.linspace(-10, 10, 400)
+    
+    if f == "sin": 
+        y = np.sin(x)
+    elif f == "cos":
+        y = np.cos(x)
+    else: 
+        y = np.zeros_like(x)
+    
+    fig, ax = plt.subplots()
+    ax.plot(x, y)
+    
+    buf = BytesIO()
+    fig.savefig(buf, format='png')
+    plt.close(fig) # Cierra la figura para liberar memoria inmediatamente
+    buf.seek(0)
+    
+    return HttpResponse(buf.getvalue(), content_type='image/png')
+
+
+# ===============================================
+# Vistas de Archivos
+# ===============================================
 
 def upload(request):
     if request.method == "POST" and request.FILES.get('archivo'):
@@ -39,7 +75,11 @@ def upload(request):
     return render(request, "upload.html")
 
 def archivos(request):
-    return render
+    return render(request, "archivos.html") 
+
+# ===============================================
+# Vistas de Ruleta y Fórmulas
+# ===============================================
 
 def ruleta_general(request):
     if request.method == "POST":
@@ -48,14 +88,14 @@ def ruleta_general(request):
 
         resultado = {}
         
-        # Lógica para seleccionar un participante si se proporcionó la lista
+        # Lógica para seleccionar un participante
         if participantes_raw:
             participantes = [p.strip() for p in participantes_raw.split(",") if p.strip()]
             if participantes:
                 elegido = random.choice(participantes)
                 resultado['participante'] = elegido
         
-        # Lógica para seleccionar un problema de la unidad si se proporcionó la unidad
+        # Lógica para seleccionar un problema de la unidad
         if unidad_id and unidad_id in RULETAS:
             unidad_data = RULETAS.get(unidad_id)
             ejercicios = unidad_data.get('ejercicios') or []
@@ -91,16 +131,10 @@ def ruleta_general(request):
     unidades = RULETAS.items()
     return render(request, "ruleta_general.html", {"unidades": unidades})
 
-from django.shortcuts import render
-from .data import FORMULAS, UNIDADES, get_formula_by_id
 
 def formulas_view(request):
     """
     Controla la navegación a través de las fórmulas por unidad.
-    
-    1. Muestra todas las unidades si no hay selección.
-    2. Muestra las fórmulas de la unidad seleccionada.
-    3. Muestra los detalles de la fórmula seleccionada.
     """
     context = {
         'unidades': UNIDADES,
@@ -130,152 +164,13 @@ def formulas_view(request):
 
 def ir_a_drive(request):
     """
-    Esta vista simplemente renderiza la plantilla 'ir_a_drive.html'.
-    No necesita pasar datos adicionales, ya que el enlace está fijo en el template.
+    Esta vista simplemente renderiza la plantilla 'libro.html'.
     """
     return render(request, 'libro.html', {})
 
-def generar_pregunta(dificultad):
-    """Genera una pregunta de aritmética según el nivel de dificultad."""
-    if dificultad == 'facil':
-        rango = (1, 10)
-        operaciones = ['+', '-']
-    elif dificultad == 'medio':
-        rango = (10, 50)
-        operaciones = ['+', '-', '*']
-    else:  # Dificultad 'dificil'
-        rango = (50, 200)
-        operaciones = ['+', '-', '*', '/']
-
-    op = random.choice(operaciones)
-    num1 = random.randint(rango[0], rango[1])
-    num2 = random.randint(rango[0], rango[1])
-
-    if op == '+':
-        pregunta = f"{num1} + {num2}"
-        respuesta = num1 + num2
-    elif op == '-':
-        pregunta = f"{num1} - {num2}"
-        respuesta = num1 - num2
-    elif op == '*':
-        pregunta = f"{num1} * {num2}"
-        respuesta = num1 * num2
-    else:  # División
-        respuesta = num1 // num2
-        num1 = respuesta * num2
-        pregunta = f"{num1} / {num2}"
-
-    return {'pregunta': pregunta, 'respuesta': respuesta}
-
-def juego_aritmetico(request):
-   import random
-import time
-from django.shortcuts import render, redirect
-
-def generate_question(level):
-    """
-    Genera una pregunta matemática basada en el nivel de dificultad.
-    """
-    if level == 1:
-        # Nivel 1: Sumas y restas con números pequeños.
-        num1 = random.randint(1, 20)
-        num2 = random.randint(1, 20)
-        operator = random.choice(['+', '-'])
-        question = f"{num1} {operator} {num2}"
-        answer = eval(question)
-    elif level == 2:
-        # Nivel 2: Multiplicaciones y divisiones.
-        num1 = random.randint(1, 15)
-        num2 = random.randint(1, 15)
-        operator = random.choice(['*', '/'])
-        if operator == '/':
-            num1 = num1 * num2
-        question = f"{num1} {operator} {num2}"
-        answer = eval(question)
-    elif level == 3:
-        # Nivel 3: Combinación de operaciones y números más grandes.
-        num1 = random.randint(20, 100)
-        num2 = random.randint(1, 20)
-        num3 = random.randint(1, 10)
-        operator1 = random.choice(['+', '-', '*'])
-        operator2 = random.choice(['+', '-'])
-        question = f"({num1} {operator1} {num2}) {operator2} {num3}"
-        answer = eval(question)
-    elif level == 4:
-        # Nivel 4: Potencias (**) y logaritmos.
-        import math
-        operators = ['**', 'log']
-        operator = random.choice(operators)
-        if operator == '**':
-            base = random.randint(2, 5)
-            exponent = random.randint(2, 4)
-            question = f"{base} ** {exponent}"
-            answer = eval(question)
-        else: # log
-            base = random.randint(2, 5)
-            power = random.randint(2, 4)
-            num = base ** power
-            question = f"log{base}({num})"
-            answer = round(math.log(num, base))
-    else:
-        return None, None
-    
-    return question, answer
-
-import random
-import time
-from django.shortcuts import render, redirect
-
-def generate_question(level):
-    """
-    Genera una pregunta matemática basada en el nivel de dificultad.
-    """
-    if level == 1:
-        num1 = random.randint(1, 20)
-        num2 = random.randint(1, 20)
-        operator = random.choice(['+', '-'])
-        question = f"{num1} {operator} {num2}"
-        answer = eval(question)
-    elif level == 2:
-        num1 = random.randint(1, 15)
-        num2 = random.randint(1, 15)
-        operator = random.choice(['*', '/'])
-        if operator == '/':
-            num1 = num1 * num2
-        question = f"{num1} {operator} {num2}"
-        answer = eval(question)
-    elif level == 3:
-        num1 = random.randint(20, 100)
-        num2 = random.randint(1, 20)
-        num3 = random.randint(1, 10)
-        operator1 = random.choice(['+', '-', '*'])
-        operator2 = random.choice(['+', '-'])
-        question = f"({num1} {operator1} {num2}) {operator2} {num3}"
-        answer = eval(question)
-    elif level == 4:
-        import math
-        operators = ['**', 'log']
-        operator = random.choice(operators)
-        if operator == '**':
-            base = random.randint(2, 5)
-            exponent = random.randint(2, 4)
-            question = f"{base} ** {exponent}"
-            answer = eval(question)
-        else: # log
-            base = random.randint(2, 5)
-            power = random.randint(2, 4)
-            num = base ** power
-            question = f"log{base}({num})"
-            answer = round(math.log(num, base))
-    else:
-        return None, None
-    
-    return question, answer
-
-import random
-import time
-import math
-from django.shortcuts import render, redirect
+# ===============================================
+# Vistas de Juegos (Aritmética y Sudoku)
+# ===============================================
 
 def generate_question(operation_type):
     """
@@ -307,6 +202,7 @@ def generate_question(operation_type):
         num3 = random.randint(1, 10)
         operator1 = random.choice(['+', '-', '*'])
         operator2 = random.choice(['+', '-'])
+        # Usamos eval con precaución en datos no ingresados por el usuario
         question = f"({num1} {operator1} {num2}) {operator2} {num3}"
         answer = eval(question)
     elif operation_type == 'advanced':
@@ -322,11 +218,13 @@ def generate_question(operation_type):
             power = random.randint(2, 4)
             num = base ** power
             question = f"log{base}({num})"
+            # Usamos math importado globalmente
             answer = round(math.log(num, base))
         elif op == 'root':
             perfect_squares = [4, 9, 16, 25, 36, 49, 64, 81, 100]
             num = random.choice(perfect_squares)
             question = f"sqrt({num})"
+            # Usamos math importado globalmente
             answer = int(math.sqrt(num))
     else:
         return "Elige una operación para empezar.", None
@@ -371,9 +269,11 @@ def juego_aritmetico(request):
             request.session['last_correct'] = False
 
         # Generar una nueva pregunta
-        question, answer = generate_question(request.session['operation_type'])
-        request.session['correct_answer'] = answer
-        request.session['question'] = question
+        operation_type = request.session.get('operation_type')
+        if operation_type: # Asegurarse de que el tipo de operación esté en la sesión
+             question, answer = generate_question(operation_type)
+             request.session['correct_answer'] = answer
+             request.session['question'] = question
         
         return redirect('juego_aritmetico')
     
@@ -387,26 +287,20 @@ def juego_aritmetico(request):
         time_remaining = time_limit - elapsed_time
 
         context = {
-            'question': request.session['question'],
-            'score': request.session['score'],
+            'question': request.session.get('question', 'Error de sesión'),
+            'score': request.session.get('score', 0),
             'time_remaining': time_remaining,
-            'last_correct': request.session['last_correct'],
+            'last_correct': request.session.get('last_correct', None),
         }
 
         # Reiniciar el juego si el tiempo se ha agotado
         if time_remaining <= 0:
+            final_score = request.session.get('score', 0)
             request.session.flush() # Limpiar la sesión para un nuevo juego
-            context['time_remaining'] = 0
+            return render(request, 'juego_aritmetico_fin.html', {'score': final_score})
 
         return render(request, 'juego_aritmetico.html', context)
 
-
-
-import random
-from django.shortcuts import render
-from django.http import JsonResponse, HttpResponseBadRequest
-
-import random
 
 def generar_tablero_sudoku():
     """
@@ -421,25 +315,23 @@ def generar_tablero_sudoku():
             for columna in range(9):
                 if tablero[fila][columna] == 0:
                     numeros = list(range(1, 10))
-                    random.shuffle(numeros)  # Baraja los números para un tablero diferente cada vez
+                    random.shuffle(numeros) 
                     for num in numeros:
                         if es_valido(tablero, fila, columna, num):
                             tablero[fila][columna] = num
                             if crear_tablero_resuelto(tablero):
                                 return True
-                            tablero[fila][columna] = 0  # Si no hay solución, retrocede (backtracking)
+                            tablero[fila][columna] = 0 
                     return False
         return True
 
     def es_valido(tablero, fila, columna, num):
         """
         Verifica si el número 'num' es válido en la posición (fila, columna)
-        según las reglas del Sudoku.
         """
         # Chequea la fila
-        for x in range(9):
-            if tablero[fila][x] == num:
-                return False
+        if num in tablero[fila]:
+             return False
 
         # Chequea la columna
         for x in range(9):
@@ -477,37 +369,38 @@ def generar_tablero_sudoku():
 
     return tablero_puzle
 
-# La función sudoku_juego() puede permanecer igual, ya que solo llama a la función de generación.
 def sudoku_juego(request):
     """
     Vista principal que renderiza el template del juego.
-    Genera un nuevo tablero cada vez que se carga la página.
     """
     if request.method == 'GET':
         tablero_inicial = generar_tablero_sudoku()
         return render(request, 'sudoku.html', {'tablero': tablero_inicial})
 
     elif request.method == 'POST':
-        data = request.json()
-        tablero_usuario = data.get('tablero', [])
-        
-        return JsonResponse({'completado': True})
+        try:
+             import json
+             data = json.loads(request.body)
+             tablero_usuario = data.get('tablero', [])
+             return JsonResponse({'completado': True})
+        except ImportError:
+             # Si json no está importado globalmente
+             import json 
+             data = json.loads(request.body)
+             tablero_usuario = data.get('tablero', [])
+             return JsonResponse({'completado': True})
+        except json.JSONDecodeError:
+             return HttpResponseBadRequest("Datos POST inválidos.")
     
-import random
-from django.shortcuts import render
-
-# --- Lógica del juego (en el backend) ---
+# --- Lógica del juego 24 (Sin cambios) ---
 def generar_numeros(min_num=1, max_num=10, cantidad=4):
     """Genera una lista de números aleatorios."""
     return [random.randint(min_num, max_num) for _ in range(cantidad)]
 
 def generar_objetivo(min_target=10, max_target=50):
     """Genera un número objetivo aleatorio."""
-    # Podrías agregar lógica más compleja aquí para asegurar que el objetivo es alcanzable,
-    # pero para la versión simple, generamos un número aleatorio.
     return random.randint(min_target, max_target)
 
-# --- Vista de Django ---
 def juego_24(request):
     """Vista principal del juego. Renderiza el template y pasa los números."""
     
@@ -517,7 +410,6 @@ def juego_24(request):
     contexto = {
         'numeros': numeros,
         'objetivo': objetivo,
-        # Convertimos la lista de números a una cadena para usarla fácilmente en JavaScript
         'numeros_js': ','.join(map(str, numeros)) 
     }
     
