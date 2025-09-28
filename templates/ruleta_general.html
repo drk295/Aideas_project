@@ -1,15 +1,13 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}Ruleta Matemática de Nicaragua{% endblock %}
+
 {% block content %}
 <style>
-    /* --- Estilos Inspirados en Nicaragua y las Matemáticas ---
-    Colores: Azul y blanco de la bandera. Detalles en verde (naturaleza) y amarillo/dorado (sol).
-    Tipografía: Una fuente limpia y geométrica.
-    Animaciones: Más dinámicas y divertidas para la ruleta.
-    */
+    /* --- Estilos Inspirados en Nicaragua y las Matemáticas --- */
 
     body {
-        background: linear-gradient(135deg, #00438b, #ffff, #00438b); /* Degradado de la bandera nicaragüense */
+        background: linear-gradient(135deg, #00438b, #ffff, #00438b); /* Azul y blanco de la bandera */
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
@@ -27,7 +25,7 @@
         width: 36px;
         height: 36px;
         border-radius: 50%;
-        border-left-color: #f7d201; /* Color del sol de la bandera */
+        border-left-color: #f7d201; /* Color del sol */
         animation: spin 1s ease-in-out infinite;
         display: none;
         margin: 0 auto;
@@ -56,6 +54,29 @@
         100% { transform: scale(1); }
     }
     
+    /* Estilos de botones de acción */
+    .btn-accion {
+        background-color: #00438b;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        font-size: 1em;
+        font-weight: bold;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.3s, transform 0.2s;
+        margin: 5px;
+    }
+    .btn-accion:hover:not(:disabled) {
+        background-color: #005aae;
+        transform: translateY(-2px);
+    }
+    .btn-accion:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+    }
+
+    /* Estilos de opciones y feedback */
     .opcion-correcta {
         background-color: #64dd17 !important; /* Verde vibrante */
         color: #000;
@@ -84,13 +105,20 @@
         transform: translateY(-2px);
     }
 
+    /* Ocultar inputs de radio de forma accesible */
+    input[type="radio"] {
+        position: absolute; 
+        opacity: 0; 
+        pointer-events: none;
+    }
+
     input[type="radio"]:checked + .label-opcion {
         background-color: #d0d0d0;
         border-color: #00438b;
         box-shadow: 0 0 8px rgba(0, 67, 139, 0.5);
     }
 
-    /* Estilos del formulario y botones */
+    /* Estilos del formulario principal */
     #form-ruleta {
         text-align: center;
         background-color: rgba(255, 255, 255, 0.8);
@@ -98,22 +126,6 @@
         border-radius: 10px;
         box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         margin-bottom: 2em;
-    }
-    
-    #form-ruleta label {
-        display: block;
-        margin-bottom: 10px;
-        font-weight: bold;
-        color: #333;
-    }
-    
-    #form-ruleta select, #form-ruleta input[type="text"] {
-        width: 80%;
-        padding: 10px;
-        border-radius: 5px;
-        border: 1px solid #ccc;
-        font-size: 1em;
-        margin-top: 5px;
     }
     
     #btn-girar {
@@ -129,14 +141,9 @@
         transition: background-color 0.3s, transform 0.3s;
     }
 
-    #btn-girar:hover {
+    #btn-girar:hover:not(:disabled) {
         background-color: #ffd900;
         transform: translateY(-3px);
-    }
-    
-    #btn-girar:disabled {
-        background-color: #ccc;
-        cursor: not-allowed;
     }
     
     #puntuacion-container {
@@ -145,10 +152,6 @@
         font-weight: bold;
         color: #00438b;
         margin-bottom: 1em;
-    }
-
-    #resultado {
-        text-align: center;
     }
 
     #feedback strong {
@@ -165,8 +168,10 @@
 <h2>⭐ Ruleta Matemática ⭐</h2>
 
 <form id="form-ruleta">
+    {% csrf_token %} 
+    
     <label>Unidad:
-        <select name="unidad_id" id="unidad_id">
+        <select name="unidad_id" id="unidad_id" style="width: 80%; padding: 10px; border-radius: 5px; border: 1px solid #ccc; font-size: 1em; margin-top: 5px;">
             {% for id, unidad in unidades %}
                 <option value="{{ id }}">{{ unidad.nombre_unidad }}</option>
             {% endfor %}
@@ -174,7 +179,7 @@
     </label>
     <div style="margin-bottom:1em; margin-top: 1em;">
         <label>Participantes (separados por coma):</label><br>
-        <input id="participants" type="text" style="width:70%;" placeholder="Ej: Ana, Luis, Marta">
+        <input id="participants" type="text" style="width:70%; padding: 10px; border-radius: 5px; border: 1px solid #ccc; font-size: 1em; margin-top: 5px;" placeholder="Ej: Ana, Luis, Marta">
     </div>
     <button type="submit" id="btn-girar">Girar Ruleta</button>
 </form>
@@ -189,6 +194,7 @@
     let puntuacion = 0;
     let unidadActual = '';
 
+    // Función auxiliar para obtener la cookie CSRF
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
@@ -204,22 +210,33 @@
         return cookieValue;
     }
 
+    // Función para realizar la solicitud POST (Girar Ruleta)
     function postRuleta(unidad_id, participants) {
         const form = new FormData();
         form.append('unidad_id', unidad_id);
         form.append('participants', participants);
-        const csrfToken = getCookie('csrftoken');
+        
+        // Se obtiene el token desde el campo oculto generado por {% csrf_token %} o la cookie
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value || getCookie('csrftoken');
 
         return fetch("{% url 'ruleta_general' %}", {
             method: 'POST',
             headers: {
+                // Se envía el token en el header, método estándar para AJAX en Django
                 'X-Requested-With': 'XMLHttpRequest',
                 'X-CSRFToken': csrfToken
             },
             body: form
-        }).then(res => res.json());
+        }).then(res => {
+            // Manejar 403 Forbidden si el token falla
+            if (res.status === 403) {
+                throw new Error("Error 403: Prohibido. El token CSRF puede ser inválido o falta la cookie.");
+            }
+            return res.json();
+        });
     }
 
+    // Función para renderizar el problema y las opciones
     function renderResultado(data) {
         const resultadoDiv = document.getElementById('resultado');
         resultadoDiv.innerHTML = '';
@@ -235,6 +252,7 @@
         }
         
         if (data.problema) {
+            // Lógica de reinicio de puntuación si cambia la unidad
             if (data.unidad_nombre !== unidadActual) {
                 puntuacion = 0;
                 unidadActual = data.unidad_nombre;
@@ -245,13 +263,13 @@
             const problemaHTML = `
                 <div id="problema-container" class="problema-container">
                     <h3>${data.problema}</h3>
-                    <div id="opciones-container"></div>
-                    <div style="margin-top:1em;">
-                        <button type="button" id="btn-comprobar-respuesta" class="btn-check">Comprobar respuesta</button>
-                        <button type="button" id="btn-mostrar-explicacion" disabled>Mostrar explicación</button>
+                    <div id="opciones-container" style="margin-top: 1em;"></div>
+                    <div id="botones-accion" style="margin-top:1.5em; text-align: center;">
+                        <button type="button" id="btn-comprobar-respuesta" class="btn-accion">Comprobar respuesta</button>
+                        <button type="button" id="btn-mostrar-explicacion" class="btn-accion" disabled>Mostrar explicación</button>
                     </div>
                     <div id="feedback" style="margin-top:1em;"></div>
-                    <details id="detalles-resp" style="margin-top:1em; display:none;">
+                    <details id="detalles-resp" style="margin-top:1.5em; display:none;">
                         <summary>Detalles de la respuesta</summary>
                         <p><strong>Respuesta correcta:</strong> ${data.respuesta}</p>
                         <p>${data.explicacion}</p>
@@ -270,6 +288,7 @@
                 opcionesContainer.appendChild(opcionDiv);
             });
             
+            // --- Lógica de Eventos del Problema ---
             const btnComprobar = document.getElementById('btn-comprobar-respuesta');
             const btnExplicacion = document.getElementById('btn-mostrar-explicacion');
             const opcionesRadios = document.querySelectorAll('input[name="opcion"]');
@@ -289,13 +308,14 @@
                 
                 const esCorrecta = checkedOption.dataset.correct === '1';
                 if (esCorrecta) {
-                    feedbackDiv.innerHTML = `<strong style="color:#64dd17;">¡Correcto! ✅</strong>`;
+                    feedbackDiv.innerHTML = `<strong style="color:#64dd17;">¡Correcto! ✅ ¡Felicidades!</strong>`;
                     puntuacion = Math.min(20, puntuacion + 1);
                 } else {
-                    feedbackDiv.innerHTML = `<strong style="color:#d50000;">Incorrecto. ❌</strong>`;
+                    feedbackDiv.innerHTML = `<strong style="color:#d50000;">Incorrecto. ❌ ¡Sigue intentando!</strong>`;
                 }
                 document.getElementById('puntuacion').textContent = puntuacion;
                 
+                // Mostrar colores de feedback
                 const labels = document.querySelectorAll('.label-opcion');
                 labels.forEach(label => {
                     const input = document.getElementById(label.getAttribute('for'));
@@ -311,6 +331,7 @@
             btnExplicacion.addEventListener('click', () => {
                 detallesResp.style.display = 'block';
                 detallesResp.open = true;
+                btnExplicacion.disabled = true; // Deshabilitar después de mostrar
             });
             
             // Animación para el contenedor del problema
@@ -319,6 +340,7 @@
         }
     }
 
+    // --- Manejo del Evento de 'Girar Ruleta' ---
     document.getElementById('form-ruleta').addEventListener('submit', function(e){
         e.preventDefault();
         const unidad_id = document.getElementById('unidad_id').value;
@@ -328,30 +350,36 @@
         const spinner = document.createElement('div');
         spinner.className = 'spinner';
         
+        // Mostrar Spinner
         btnGirar.innerHTML = '';
         btnGirar.appendChild(spinner);
         spinner.style.display = 'block';
         btnGirar.disabled = true;
 
-        if (!unidad_id && !participants) {
-            resultadoDiv.innerHTML = `<strong style="color:#d50000;">Error: Debes seleccionar una unidad o introducir al menos un participante.</strong>`;
-            spinner.style.display = 'none';
-            btnGirar.textContent = 'Girar Ruleta';
-            btnGirar.disabled = false;
+        if (!unidad_id) {
+            resultadoDiv.innerHTML = `<strong style="color:#d50000;">Error: Debes seleccionar una unidad.</strong>`;
+            
+            // Restaurar botón de giro
+            setTimeout(() => {
+                spinner.style.display = 'none';
+                btnGirar.textContent = 'Girar Ruleta';
+                btnGirar.disabled = false;
+            }, 500);
             return;
         }
 
         postRuleta(unidad_id, participants).then(data => {
             renderResultado(data);
         }).catch(err => {
-            resultadoDiv.innerHTML = `<strong>Error en la petición.</strong>`;
+            resultadoDiv.innerHTML = `<strong>Error en la petición: ${err.message}. Por favor, recarga la página.</strong>`;
             console.error(err);
         }).finally(() => {
+            // Ocultar Spinner y habilitar botón
             setTimeout(() => {
                 spinner.style.display = 'none';
                 btnGirar.textContent = 'Girar Ruleta';
                 btnGirar.disabled = false;
-            }, 1000); // Pequeño retraso para que la animación del spinner sea visible
+            }, 1000); 
         });
     });
 </script>
