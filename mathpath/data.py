@@ -572,215 +572,223 @@ RULETAS = {
   }
 }
 
+import simplejson as json
+from django.shortcuts import render
+# Otras importaciones de Django...
 
-FORMULAS= {
+# Tu diccionario de fórmulas CORRECTO (sin $ en 'formula' y con doble \\):
+
+FORMULAS = {
     "Unidad 1: Sucesiones": [
         {
             "id": 101,
             "nombre": "Término general (Aritmética)",
-            "formula": "a_n = a_1 + (n-1)d",
-            "descripcion": "Calcula el enésimo término de una sucesión aritmética, donde 'd' es la diferencia común y 'a_1' el primer término.",
-            "ejemplo": "Dada la sucesión (5, 8, 11, ...), con a₁=5 y d=3. El término general es a_{n} = 5 + (n-1)3."
+            "formula": "$a_n = a_1 + (n-1)d$",
+            "descripcion": "Calcula el enésimo término de una sucesión aritmética, donde '$d$' es la diferencia común y '$a_1$' el primer término.",
+            "ejemplo": "Dada la sucesión (5, 8, 11, ...), con $a_1=5$ y $d=3$. El término general es $a_n = 5 + (n-1)3$."
         },
         {
             "id": 102,
             "nombre": "Suma de n términos (Aritmética)",
-            "formula": "S_n = (n * (a_1 + a_n)) / 2",
-            "descripcion": "Calcula la suma de los primeros 'n' términos de una sucesión aritmética.",
-            "ejemplo": "La suma de los primeros 10 términos de la sucesión donde a₁=2 y a₁₀=20 es S₁₀ = (10(2 + 20))/2 = 110."
+            "formula": "$S_n = \\frac{n(a_1 + a_n)}{2}$",
+            "descripcion": "Calcula la suma de los primeros '$n$' términos de una sucesión aritmética.",
+            "ejemplo": "La suma de los primeros 10 términos de la sucesión donde $a_1=2$ y $a_{10}=20$ es $S_{10} = \\frac{10(2 + 20)}{2} = 110$."
         },
         {
             "id": 103,
             "nombre": "Término general (Geométrica)",
-            "formula": "a_n = a_1 * r^(n-1)",
-            "descripcion": "Calcula el enésimo término de una sucesión geométrica, donde 'r' es la razón común y 'a_1' el primer término.",
-            "ejemplo": "Dada la sucesión (3, 6, 12, ...), con a₁=3 y r=2. El término general es a_{n} = 3 * 2^{n-1}."
+            "formula": "$a_n = a_1 \\cdot r^{n-1}$",
+            "descripcion": "Calcula el enésimo término de una sucesión geométrica, donde '$r$' es la razón común y '$a_1$' el primer término.",
+            "ejemplo": "Dada la sucesión (3, 6, 12, ...), con $a_1=3$ y $r=2$. El término general es $a_n = 3 \\cdot 2^{n-1}$."
         },
         {
             "id": 104,
             "nombre": "Suma de n términos (Geométrica, r != 1)",
-            "formula": "S_n = (a_1 * (r^n - 1)) / (r - 1)",
-            "descripcion": "Calcula la suma de los primeros 'n' términos de una sucesión geométrica.",
-            "ejemplo": "La suma de los primeros 4 términos de la sucesión donde a₁=2 y r=3 es S₄ = (2(3⁴ - 1))/(3 - 1) = 80."
+            "formula": "$S_n = \\frac{a_1 (r^n - 1)}{r - 1}$",
+            "descripcion": "Calcula la suma de los primeros '$n$' términos de una sucesión geométrica.",
+            "ejemplo": "La suma de los primeros 4 términos de la sucesión donde $a_1=2$ y $r=3$ es $S_4 = \\frac{2(3^4 - 1)}{3 - 1} = 80$."
         },
         {
             "id": 105,
             "nombre": "Notación de Sumatoria (Sigma)",
-            "formula": "S = Sum_{k=1}^{n} a_k",
-            "descripcion": "Representa la suma de los términos desde el índice k=1 hasta n.",
-            "ejemplo": "La expresión Sum_{k=1}^{4} 2k representa la suma 2(1) + 2(2) + 2(3) + 2(4) = 20."
+            "formula": "$S = \\sum_{k=1}^{n} a_k$",
+            "descripcion": "Representa la suma de los términos desde el índice $k=1$ hasta $n$.",
+            "ejemplo": "La expresión $\\sum_{k=1}^{4} 2k$ representa la suma $2(1) + 2(2) + 2(3) + 2(4) = 20$."
         }
     ],
     "Unidad 2: Potenciación y Funciones Exponenciales": [
         {
             "id": 201,
             "nombre": "Multiplicación de bases iguales",
-            "formula": "a^m * a^n = a^{m+n}",
+            "formula": "$a^m \\cdot a^n = a^{m+n}$",
             "descripcion": "Al multiplicar potencias con la misma base, se suman los exponentes.",
-            "ejemplo": "2³ * 2⁴ = 2^{3+4} = 2⁷ = 128."
+            "ejemplo": "$2^3 \\cdot 2^4 = 2^{3+4} = 2^7 = 128$."
         },
         {
             "id": 202,
             "nombre": "Potencia de una potencia",
-            "formula": "(a^m)^n = a^{m * n}",
+            "formula": "$(a^m)^n = a^{m \\cdot n}$",
             "descripcion": "Al elevar una potencia a otro exponente, se multiplican los exponentes.",
-            "ejemplo": "(5² )³ = 5^{2 * 3} = 5⁶ = 15625."
+            "ejemplo": "$(5^2 )^3 = 5^{2 \\cdot 3} = 5^6 = 15625$."
         },
         {
             "id": 203,
             "nombre": "División de bases iguales",
-            "formula": "a^m / a^n = a^{m-n}",
+            "formula": "$\\frac{a^m}{a^n} = a^{m-n}$",
             "descripcion": "Al dividir potencias con la misma base, se restan los exponentes.",
-            "ejemplo": "x⁷ / x³ = x⁴."
+            "ejemplo": "$\\frac{x^7}{x^3} = x^4$."
         },
         {
             "id": 204,
             "nombre": "Exponente negativo",
-            "formula": "a^{-n} = 1 / a^n",
+            "formula": "$a^{-n} = \\frac{1}{a^n}$",
             "descripcion": "Convierte un exponente negativo en un exponente positivo en el denominador de una fracción.",
-            "ejemplo": "4^{-2} = 1 / 4^{2} = 1 / 16."
+            "ejemplo": "$4^{-2} = \\frac{1}{4^2} = \\frac{1}{16}$."
         },
         {
             "id": 205,
             "nombre": "Multiplicación de radicales",
-            "formula": "sqrt[n]{a} * sqrt[n]{b} = sqrt[n]{a * b}",
+            "formula": "$\\sqrt[n]{a} \\cdot \\sqrt[n]{b} = \\sqrt[n]{a \\cdot b}$",
             "descripcion": "El producto de radicales con el mismo índice es igual a la raíz del producto.",
-            "ejemplo": "sqrt[3]{4} * sqrt[3]{2} = sqrt[3]{8} = 2."
+            "ejemplo": "$\\sqrt[3]{4} \\cdot \\sqrt[3]{2} = \\sqrt[3]{8} = 2$."
         },
         {
             "id": 206,
             "nombre": "Propiedad de ecuaciones exponenciales",
-            "formula": "Si a^p = a^q, entonces p = q",
-            "descripcion": "Si las bases son iguales (y a ≠ 0, 1, -1), los exponentes deben ser iguales.",
-            "ejemplo": "Si 2^{x} = 2⁵, entonces x = 5."
+            "formula": "$Si\\ a^p = a^q, entonces\\ p = q$",
+            "descripcion": "Si las bases son iguales (y $a \\neq 0, 1, -1$), los exponentes deben ser iguales.",
+            "ejemplo": "Si $2^x = 2^5$, entonces $x = 5$."
         }
     ],
     "Unidad 3: Logaritmo y Funciones Logarítmicas": [
         {
             "id": 301,
             "nombre": "Definición de logaritmo",
-            "formula": "log_a M = x <=> M = a^x",
+            "formula": "$\\log_a M = x \\iff M = a^x$",
             "descripcion": "Establece la relación entre la forma logarítmica y la forma exponencial.",
-            "ejemplo": "log₂ 8 = 3 <=> 8 = 2³."
+            "ejemplo": "$\\log_2 8 = 3 \\iff 8 = 2^3$."
         },
         {
             "id": 302,
             "nombre": "Logaritmo de un producto",
-            "formula": "log_a (M * N) = log_a M + log_a N",
+            "formula": "$\\log_a (M \\cdot N) = \\log_a M + \\log_a N$",
             "descripcion": "El logaritmo de un producto es la suma de los logaritmos.",
-            "ejemplo": "log₁₀ (5 * 2) = log₁₀ 5 + log₁₀ 2."
+            "ejemplo": "$\\log_{10} (5 \\cdot 2) = \\log_{10} 5 + \\log_{10} 2$."
         },
         {
             "id": 303,
             "nombre": "Logaritmo de una potencia",
-            "formula": "log_a M^k = k * log_a M",
+            "formula": "$\\log_a M^k = k \\cdot \\log_a M$",
             "descripcion": "El logaritmo de una potencia es el exponente por el logaritmo de la base.",
-            "ejemplo": "log₂ 16 = log₂ 2⁴ = 4 * log₂ 2 = 4(1) = 4."
+            "ejemplo": "$\\log_2 16 = \\log_2 2^4 = 4 \\cdot \\log_2 2 = 4(1) = 4$."
         },
         {
             "id": 304,
             "nombre": "Fórmula de Cambio de Base",
-            "formula": "log_a M = (log_b M) / (log_b a)",
-            "descripcion": "Permite calcular un logaritmo en base 'a' usando una nueva base 'b'.",
-            "ejemplo": "log₃ 10 = (log₁₀ 10) / (log₁₀ 3) ≈ 1 / 0.4771."
+            "formula": "$\\log_a M = \\frac{\\log_b M}{\\log_b a}$",
+            "descripcion": "Permite calcular un logaritmo en base '$a$' usando una nueva base '$b$'.",
+            "ejemplo": "$\\log_3 10 = \\frac{\\log_{10} 10}{\\log_{10} 3} \\approx \\frac{1}{0.4771}$."
         }
     ],
     "Unidad 4: Geometría Analítica": [
         {
             "id": 401,
             "nombre": "Coordenada x de punto que divide en razón m:n",
-            "formula": "x = (n * x_1 + m * x_2) / (m + n)",
-            "descripcion": "Calcula la coordenada x del punto que divide un segmento con extremos (x₁, y₁) y (x₂, y₂) en una razón dada (m:n).",
-            "ejemplo": "Para A(1, 0) y B(5, 0) en razón 1:1, la coordenada x es x = (1(1) + 1(5)) / (1 + 1) = 3."
+            "formula": "$x = \\frac{n x_1 + m x_2}{m + n}$",
+            "descripcion": "Calcula la coordenada $x$ del punto que divide un segmento con extremos $(x_1, y_1)$ y $(x_2, y_2)$ en una razón dada ($m:n$).",
+            "ejemplo": "Para $A(1, 0)$ y $B(5, 0)$ en razón $1:1$, la coordenada $x$ es $x = \\frac{1(1) + 1(5)}{1 + 1} = 3$."
         },
         {
             "id": 402,
             "nombre": "Circunferencia (Ordinaria, centro (h, k))",
-            "formula": "(x-h)² + (y-k)² = r²",
-            "descripcion": "Ecuación de una circunferencia con centro en (h, k) y radio 'r'.",
-            "ejemplo": "Una circunferencia con centro en (3, -2) y radio 4 tiene la ecuación (x-3)² + (y+2)² = 16."
+            "formula": "$(x-h)^2 + (y-k)^2 = r^2$",
+            "descripcion": "Ecuación de una circunferencia con centro en $(h, k)$ y radio '$r$'.",
+            "ejemplo": "Una circunferencia con centro en $(3, -2)$ y radio $4$ tiene la ecuación $(x-3)^2 + (y+2)^2 = 16$."
         }
     ],
     "Unidad 5: Cónicas": [
         {
             "id": 501,
             "nombre": "Parábola (Vértice en (0, 0), foco eje y)",
-            "formula": "x² = 4py",
-            "descripcion": "Ecuación de una parábola vertical con vértice en el origen, donde 'p' es la distancia del foco al vértice.",
-            "ejemplo": "Una parábola con foco en (0, 3) tiene p=3, y su ecuación es x² = 4(3)y, o sea, x² = 12y."
+            "formula": "$x^2 = 4py$",
+            "descripcion": "Ecuación de una parábola vertical con vértice en el origen, donde '$p$' es la distancia del foco al vértice.",
+            "ejemplo": "Una parábola con foco en $(0, 3)$ tiene $p=3$, y su ecuación es $x^2 = 4(3)y$, o sea, $x^2 = 12y$."
         },
         {
             "id": 502,
             "nombre": "Elipse (Canónica, centro (0, 0), focos eje x)",
-            "formula": "x² / a² + y² / b² = 1",
-            "descripcion": "Ecuación de una elipse horizontal con centro en el origen, donde 'a' es el semieje mayor y 'b' el semieje menor.",
-            "ejemplo": "Si a=5 y b=3, la ecuación es x² / 25 + y² / 9 = 1."
+            "formula": "$\\frac{x^2}{a^2} + \\frac{y^2}{b^2} = 1$",
+            "descripcion": "Ecuación de una elipse horizontal con centro en el origen, donde '$a$' es el semieje mayor y '$b$' el semieje menor.",
+            "ejemplo": "Si $a=5$ y $b=3$, la ecuación es $\\frac{x^2}{25} + \\frac{y^2}{9} = 1$."
         },
         {
             "id": 503,
             "nombre": "Relación fundamental (Elipse)",
-            "formula": "c² = a² - b²",
-            "descripcion": "Relaciona la distancia del centro a los vértices ('a'), a los extremos del eje menor ('b'), y a los focos ('c').",
-            "ejemplo": "Si a=5 y b=3, entonces c² = 5² - 3² = 16, por lo tanto, c=4 (distancia focal)."
+            "formula": "$c^2 = a^2 - b^2$",
+            "descripcion": "Relaciona la distancia del centro a los vértices ('$a$'), a los extremos del eje menor ('$b$'), y a los focos ('$c$').",
+            "ejemplo": "Si $a=5$ y $b=3$, entonces $c^2 = 5^2 - 3^2 = 16$, por lo tanto, $c=4$ (distancia focal)."
         },
         {
             "id": 504,
             "nombre": "Hipérbola (Canónica, centro (0, 0), focos eje x)",
-            "formula": "x² / a² - y² / b² = 1",
+            "formula": "$\\frac{x^2}{a^2} - \\frac{y^2}{b^2} = 1$",
             "descripcion": "Ecuación de una hipérbola horizontal con centro en el origen.",
-            "ejemplo": "Una hipérbola con a=4 y b=3 tiene la ecuación x² / 16 - y² / 9 = 1."
+            "ejemplo": "Una hipérbola con $a=4$ y $b=3$ tiene la ecuación $\\frac{x^2}{16} - \\frac{y^2}{9} = 1$."
         },
         {
             "id": 505,
             "nombre": "Asíntotas (Hipérbola, focos eje x)",
-            "formula": "y = +/- (b/a) * x",
+            "formula": "$y = \\pm \\frac{b}{a} x$",
             "descripcion": "Ecuación de las líneas asíntotas que guían las ramas de una hipérbola horizontal.",
-            "ejemplo": "Para la hipérbola x² / 16 - y² / 9 = 1 (a=4, b=3), las asíntotas son y = +/- (3/4)x."
+            "ejemplo": "Para la hipérbola $\\frac{x^2}{16} - \\frac{y^2}{9} = 1$ ($a=4, b=3$), las asíntotas son $y = \\pm \\frac{3}{4}x$."
         }
     ],
     "Unidad 6: Técnicas de Conteo y Probabilidades": [
         {
             "id": 601,
             "nombre": "Probabilidad Teórica",
-            "formula": "P(A) = n(A) / n(E)",
-            "descripcion": "Calcula la probabilidad de un evento como la razón entre casos favorables 'n(A)' y casos posibles 'n(E)'.",
-            "ejemplo": "La probabilidad de sacar un 5 en un dado de 6 caras es P(5) = 1/6."
+            "formula": "$P(A) = \\frac{n(A)}{n(E)}$",
+            "descripcion": "Calcula la probabilidad de un evento como la razón entre casos favorables '$n(A)$' y casos posibles '$n(E)$'.",
+            "ejemplo": "La probabilidad de sacar un 5 en un dado de 6 caras es $P(5) = \\frac{1}{6}$."
         },
         {
             "id": 602,
             "nombre": "Regla de la Adición (Eventos cualesquiera)",
-            "formula": "P(A U B) = P(A) + P(B) - P(A n B)",
-            "descripcion": "Calcula la probabilidad de que ocurra el evento A o el evento B.",
-            "ejemplo": "P(par o 5) = P(par) + P(5) - P(par y 5) = 3/6 + 1/6 - 0/6 = 4/6."
+            "formula": "$P(A \\cup B) = P(A) + P(B) - P(A \\cap B)$",
+            "descripcion": "Calcula la probabilidad de que ocurra el evento $A$ o el evento $B$.",
+            "ejemplo": "$P(\\text{par o } 5) = P(\\text{par}) + P(5) - P(\\text{par } \\cap \\text{ } 5) = \\frac{3}{6} + \\frac{1}{6} - \\frac{0}{6} = \\frac{4}{6}$."
         },
         {
             "id": 603,
             "nombre": "Regla de la Adición (Eventos mutuamente excluyentes)",
-            "formula": "P(A U B) = P(A) + P(B)",
+            "formula": "$P(A \\cup B) = P(A) + P(B)$",
             "descripcion": "Calcula la probabilidad de la unión de dos eventos que no pueden ocurrir simultáneamente.",
-            "ejemplo": "P(par o impar) = P(par) + P(impar) = 3/6 + 3/6 = 1."
+            "ejemplo": "$P(\\text{par o impar}) = P(\\text{par}) + P(\\text{impar}) = \\frac{3}{6} + \\frac{3}{6} = 1$."
         },
         {
             "id": 604,
             "nombre": "Probabilidad Condicional (A dado B)",
-            "formula": "P(A|B) = P(A n B) / P(B)",
-            "descripcion": "Calcula la probabilidad de que ocurra A, dado que B ya ha ocurrido.",
-            "ejemplo": "P(sacar 6 | sacar par) = P(sacar 6 y par) / P(sacar par) = (1/6) / (3/6) = 1/3."
+            "formula": "$P(A|B) = \\frac{P(A \\cap B)}{P(B)}$",
+            "descripcion": "Calcula la probabilidad de que ocurra $A$, dado que $B$ ya ha ocurrido.",
+            "ejemplo": "$P(\\text{sacar } 6 | \\text{ sacar par}) = \\frac{P(\\text{sacar } 6 \\cap \\text{ par})}{P(\\text{sacar par})} = \\frac{1/6}{3/6} = \\frac{1}{3}$."
         },
         {
             "id": 605,
             "nombre": "Regla de la Multiplicación (Eventos independientes)",
-            "formula": "P(A n B) = P(A) * P(B)",
-            "descripcion": "Calcula la probabilidad de que los eventos A y B ocurran simultáneamente o en secuencia.",
-            "ejemplo": "P(cara en moneda y 5 en dado) = P(cara) * P(5) = (1/2) * (1/6) = 1/12."
+            "formula": "$P(A \\cap B) = P(A) \\cdot P(B)$",
+            "descripcion": "Calcula la probabilidad de que los eventos $A$ y $B$ ocurran simultáneamente o en secuencia.",
+            "ejemplo": "$P(\\text{cara y } 5) = P(\\text{cara}) \\cdot P(5) = \\frac{1}{2} \\cdot \\frac{1}{6} = \\frac{1}{12}$."
         }
     ]
 }
 
-# --- Funciones auxiliares para la vista Django ---
-
 def get_formula_by_id(formula_id):
     """Busca y retorna una fórmula por su ID único."""
+    try:
+        formula_id = int(formula_id)
+    except (TypeError, ValueError):
+        return None
+    
     for formulas in FORMULAS.values():
         for formula in formulas:
             if formula.get("id") == formula_id:
@@ -789,4 +797,32 @@ def get_formula_by_id(formula_id):
 
 UNIDADES = list(FORMULAS.keys())
 
-# Este código define la estructura de datos que usarás en tu archivo views.py
+
+def formulas_view(request):
+    selected_unidad = request.GET.get('unidad')
+    formula_id = request.GET.get('formula_id')
+    
+    formula_obj = None
+    selected_formula_details_json = None
+    
+    if formula_id:
+        formula_obj = get_formula_by_id(formula_id)
+
+        if formula_obj:
+            # *** SERIALIZACIÓN CLAVE PARA DJANGO ***
+            # Convertimos el objeto Python a una cadena JSON aquí, en la vista.
+            selected_formula_details_json = json.dumps(formula_obj, ensure_ascii=False)
+    
+    context = {
+        'unidades': UNIDADES,
+        'selected_unidad': selected_unidad,
+        # Pasamos la cadena JSON serializada al contexto
+        'selected_formula_details_json': selected_formula_details_json, 
+        
+        # También pasamos el objeto de Python por si se necesita para obtener el nombre en el template
+        'selected_formula_details': formula_obj, 
+        
+        'formulas': FORMULAS.get(selected_unidad) if selected_unidad else None,
+    }
+
+    return render(request, 'nombre_de_tu_template.html', context)

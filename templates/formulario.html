@@ -6,11 +6,18 @@
 <head>
     <meta charset="UTF-8">
     <title>Compendio de Fórmulas</title>
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']]
+            }
+        };
+    </script>
     <style>
-        /* Paleta de Colores inspirada en la bandera de Nicaragua:
-           Azul Cobalto (#005BA4), Blanco (#FFFFFF), Dorado/Amarillo (#FFD700) para acentos.
-           Verde (#008000) o un tono tierra para la naturaleza.
-        */
+        /* Paleta de Colores inspirada en la bandera de Nicaragua */
         :root {
             --color-azul: #005BA4;
             --color-blanco: #FFFFFF;
@@ -64,7 +71,6 @@
         }
 
         /* --- Estilo de Navegación y Botones/Enlaces --- */
-
         a {
             text-decoration: none;
             color: var(--color-azul);
@@ -81,7 +87,6 @@
         }
 
         .nav-link {
-            /* Estilo específico para los enlaces de navegación "Volver" */
             font-size: 0.95em;
             margin-right: 15px;
             padding: 5px 10px;
@@ -144,17 +149,19 @@
             color: #444;
         }
 
-        /* Estilo para el código de la fórmula (matemáticas) */
-        code {
+        /* Estilo para el contenedor de la fórmula (donde MathJax renderiza) */
+        .formula-display {
             display: block;
             background-color: var(--color-blanco);
             padding: 15px;
             border-radius: 6px;
             border: 1px dashed var(--color-azul);
-            font-family: 'Consolas', 'Courier New', monospace;
+            font-family: 'Arial', sans-serif; 
             font-size: 1.15em;
             color: var(--color-texto);
-            overflow-x: auto; /* Para fórmulas largas */
+            overflow-x: auto; 
+            text-align: center;
+            min-height: 50px; 
         }
     </style>
 </head>
@@ -175,7 +182,7 @@
             <h2>Fórmula Seleccionada: {{ selected_formula_details.nombre }}</h2>
             <div class="details">
                 <h3>Fórmula</h3>
-                <p><code>{{ selected_formula_details.formula }}</code></p>
+                <div class="formula-display">{{ selected_formula_details.formula | safe }}</div>
                 
                 <h3>Descripción</h3>
                 <p>{{ selected_formula_details.descripcion }}</p>
